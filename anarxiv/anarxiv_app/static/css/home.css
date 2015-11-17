@@ -1,0 +1,21 @@
+#title {
+    position: absolute;
+    border-radius: 5px;
+    text-align: center;
+    font-family: Verdana, Arial, Sans-Serif;
+    color: rgb(0,150,150);
+    width: 1000px;
+    font-size: 50px;
+    left: 300px;
+    top: 10px;
+}
+body {
+    background-color: rgb(58, 58, 58);
+}
+
+div {
+    color: rgb(0,0,0);
+    position: absolute;
+    top: 500px;
+
+}

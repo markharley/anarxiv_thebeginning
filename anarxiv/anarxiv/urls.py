@@ -15,10 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from view import *
 
 urlpatterns = [
+	url(r'^home/', include('anarxiv_app.urls')),
     url(r'^admin/', include(admin.site.urls)),
-
-    url(r'^home/', getHome)
 ]
