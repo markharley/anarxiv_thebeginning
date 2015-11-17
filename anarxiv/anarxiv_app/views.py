@@ -7,3 +7,7 @@ from anarxiv_app.models import paper
 
 def home(request):
      return render_to_response('home.html')
+
+def astrophysics(request):
+     return render_to_response('astrophysics.html')
+
