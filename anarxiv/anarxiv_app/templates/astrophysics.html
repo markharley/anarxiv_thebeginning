@@ -1,3 +1,33 @@
+{% load staticfiles %}
+
+<head>
+	<link rel="stylesheet" href="{% static 'css/home.css' %}">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+
 <body>
-ASS-TROPHYSICS
+	<header>
+		<h1 id = "header">
+		Welcome to the ANARXIV: The place where you can call academics out.
+		</h1>
+	</header>
+
+
+	<h2> Recent papers </h2>
+
+	<ul>
+ 	 	<li>{{ title }}</li> 
+ 	 	<li>{{ author }}</li> 
+ 	 	<li>{{ journalref }}</li> 
+	</ul>
+
+
+
+
+<footer>
+<h1 id = "footer">This is in no way associated with the arxiv.....</h1>
+</footer>
+
+
+
 </body>
