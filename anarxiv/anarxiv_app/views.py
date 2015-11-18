@@ -1,8 +1,8 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponse
+from django.shortcuts import render_to_response, render, loader
+from django.http import HttpResponse, JsonResponse
 from anarxiv_app.models import paper
 from django.template import Context, Template
-import urllib, ssl, requests
+import requests
 
 # Create your views here.
 
@@ -15,9 +15,42 @@ def astrophysics(request):
 	return render_to_response('astrophysics.html', context)
 	
 
-def search(request):
-	SecondName = request.GET['q']
-   	url = "https://inspirehep.net/search?ln=en&p=find+a+" + SecondName +"&of=recjson&action_search=Search&sf=earliestdate&so=d&ot=recid,number_of_citations,authors,title"
-   	r = requests.get(url)
-   	return render_to_response('results.html', {'query':r.json()} )
 
+def search(request, surname):
+	
+	baseurl = "https://inspirehep.net/"
+   	url = baseurl + "search?ln=en&p=find+a+" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&ot=recid,number_of_citations,authors,title"
+   	r = requests.get(url)
+   	
+   	template = loader.get_template("result_instance.html")
+
+
+   	renderList = []
+   	
+   	for i in range(len(r.json())):
+   		paper = {}
+   		paper['title'] = r.json()[i]['title']['title']
+
+   		length = len(r.json()[i]['authors'])
+
+   		Authors = ""
+   		for j in range(length):
+   			Authors += (r.json()[i]['authors'][j]['first_name']) + " " +(r.json()[i]['authors'][j]['last_name']) 
+   			if j==length-1:
+   				Authors += '.'
+   			else:
+   				Authors += ', '	
+
+
+		paper['authors'] = Authors
+		paper['no_citations'] = r.json()[i]['number_of_citations']
+
+		
+		renderList.append(str(template.render(paper).encode('utf8')))
+
+   	
+   	return JsonResponse({'htmlList': renderList})
+
+
+
+ 
