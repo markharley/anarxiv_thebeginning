@@ -41,6 +41,11 @@ p {
 #result{
     color:rgb(0,0,0);
     margin:3px;
+
+}
+
+#result:hover { 
+    background-color: rgba(0,0,255,0.1);
 }
 
 #title{
@@ -49,14 +54,25 @@ p {
 
 #searchButton{
     margin:3px;
+    padding:2px;
 
  }
 
 #surname{
     margin:3px;
+    padding:2px;
+}
+
+#test{
+    overflow:scroll;
+    max-height :470px;
 }
 
 
+#abstractView{
+    background-color: #b31b1b;
+    color: rgb(0,0,255);
+}
 
 
 

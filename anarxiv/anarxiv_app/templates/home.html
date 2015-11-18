@@ -24,29 +24,30 @@
 			<h2> Physics </h2>
 
 				<ul>
-			 	 	<li><a href="/home/astrophysics">Astrophysics</a></li> 
-					<li>Condensed Matter</li> 
-					<li>General Relativity and Quantum Cosmology (gr-qc new, recent, find)</li> 
-					<li>High Energy Physics - Experiment (hep-ex new, recent, find)</li> 
-					<li>High Energy Physics - Lattice (hep-lat new, recent, find)</li> 
-					<li>High Energy Physics - Phenomenology (hep-ph new, recent, find)</li> 
-					<li>High Energy Physics - Theory (hep-th new, recent, find)</li> 
-					<li>Mathematical Physics (math-ph new, recent, find)</li> 
-					<li>Nonlinear Sciences (nlin new, recent, find)</li> 
-					<li>Nuclear Experiment (nucl-ex new, recent, find)</li> 
-					<li>Nuclear Theory (nucl-th new, recent, find)</li> 
-					<li>Physics (physics new, recent, find)</li> 
-					<li>Quantum Physics (quant-ph new, recent, find)</li> 
+			 	 	<li><a href="/home/subanarxiv/astro">Astrophysics</a></li> 
+					<li><a href="/home/subanarxiv/co-mp">Condensed Matter</a></li> 
+					<li><a href="/home/subanarxiv/gr-qc">General Relativity and Quantum Cosmology (gr-qc new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/hep-ex">High Energy Physics - Experiment (hep-ex new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/hep-lat">High Energy Physics - Lattice (hep-lat new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/hep-ph">High Energy Physics - Phenomenology (hep-ph new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/hep-th">High Energy Physics - Theory (hep-th new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/math-ph">Mathematical Physics (math-ph new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/nlin">Nonlinear Sciences (nlin new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/nucl-ex">Nuclear Experiment (nucl-ex new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/nucl-th">Nuclear Theory (nucl-th new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/physics">Physics (physics new, recent, find)</a></li> 
+					<li><a href="/home/subanarxiv/quant-ph">Quantum Physics (quant-ph new, recent, find)</a></li> 
 				</ul>
 
 
 			<input type="text" id="surname" value="bartrum"> 
 			<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
 
-			<div id= "test"> </div>
+			<div id= "test"> <br> </div>
+			<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 
 
-			<script type = "text/javascript">
+			 <script type = "text/javascript">
 
 				function searchButtonClicked() {
 
@@ -58,6 +59,7 @@
 		           	success: function(data) {
 		           		console.log(data);
 		           		var length = data['htmlList'].length;
+		           		$('#test').html(""); // reset search
 		           		
 		           		for(var i =0; i < length; i++){
 		           			$('#test').append(data['htmlList'][i]);

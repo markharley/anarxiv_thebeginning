@@ -1,0 +1,42 @@
+<hmtl>
+{% load staticfiles %}
+
+<head>
+	<title>
+		This is the homepage
+	</title>
+	
+	<link rel="stylesheet" href="{% static 'css/home.css' %}">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+</head>
+
+<body>
+
+	<div id = "wrapper">
+
+		<div id = "header">
+			<h1> Welcome to the ANARXIV: The place where you can call academics out.</h1>
+		</div>
+
+		<div id = "content">
+		
+		<h1> {{ SECTION  }} </h1>
+		
+
+			</div>
+
+			<div id = "footer">
+				This is in no way associated with the arxiv.....
+			</div>
+
+		</div>
+
+
+
+
+
+</body>
+
+</html>
