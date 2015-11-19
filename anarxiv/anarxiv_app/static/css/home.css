@@ -11,6 +11,11 @@ p {
     margin:0 
 }
 
+
+#paperlink {
+      text-decoration:none;
+}
+
 #wrapper {
     min-height:100%;
     position:relative;
@@ -38,19 +43,6 @@ p {
 }
 
 
-#result{
-    color:rgb(0,0,0);
-    margin:3px;
-
-}
-
-#result:hover { 
-    background-color: rgba(0,0,255,0.1);
-}
-
-#title{
-    font-weight: bold;
- }
 
 #searchButton{
     margin:3px;
@@ -75,10 +67,32 @@ p {
 }
 
 
+/* CSS styling for the search results*/
+.tooltip {
+    display:none;
+    position:absolute;
+    border:1px solid #333;
+    background-color:#161616;
+    border-radius:5px;
+    padding:10px;
+    color:#fff;
+    font-size:12px Arial;
+}
 
 
+#result{
+    color:rgb(0,0,0);
+    margin:3px;
 
+}
 
+#result:hover { 
+    background-color: rgba(0,0,255,0.1);
+}
+
+#title{
+    font-weight: bold;
+ }
 
 
 

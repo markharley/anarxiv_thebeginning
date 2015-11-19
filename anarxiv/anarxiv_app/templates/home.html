@@ -9,10 +9,10 @@
 	<link rel="stylesheet" href="{% static 'css/home.css' %}">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-	<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
 </head>
 
 <body>
+
 
 	<div id = "wrapper">
 
@@ -57,7 +57,7 @@
 		           	url: "../home/search/" + x + "/",
 
 		           	success: function(data) {
-		           		console.log(data);
+		          
 		           		var length = data['htmlList'].length;
 		           		$('#test').html(""); // reset search
 		           		
@@ -66,12 +66,14 @@
 
 			            }
 			        	}
-			         
+			         	
 			         	});
 
 					};
 
 			</script>
+
+
 
 			</div>
 
@@ -79,8 +81,8 @@
 				This is in no way associated with the arxiv.....
 			</div>
 
-		</div>
 
+		</div>
 
 
 

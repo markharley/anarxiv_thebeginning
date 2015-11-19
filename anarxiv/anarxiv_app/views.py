@@ -33,6 +33,7 @@ def search(request, surname):
    	for article in r.json():
    		paper = {}
    		paper['title'] = article['title']['title']
+   		paper['recid'] = article['recid']
    	
    		# The arXiv stores more than one abstract so this is the only way I can access it. Should be robust.
    		if isinstance(article['abstract'], list):
@@ -60,6 +61,23 @@ def search(request, surname):
 
    	
    	return JsonResponse({'htmlList': renderList})
+
+def paperdisplay(request, paperID):
+	url = "https://inspirehep.net/"+paperID +"/"
+	context = {'paperID': paperID, 'title': 'baladas', 'authors':'asdasd', 'journal_ref': 'asdas'}
+	return render_to_response('paper.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
