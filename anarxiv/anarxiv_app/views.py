@@ -3,6 +3,8 @@ from django.http import HttpResponse, JsonResponse
 from anarxiv_app.models import Paper
 from django.template import Context, Template
 import requests
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 # Create your views here.
 
@@ -84,7 +86,41 @@ def paperdisplay(request, paperID):
 
 
 
+# This returns a JSON of the current message and appends it to the Paper object
+@csrf_exempt
+def messageSubmission(request):
+	message = request.POST['message']     
+	message_id = request.POST['id']
 
+	paper = Paper.objects.filter(recordID = message_id)
+
+
+	paper.update(messages = message)
+
+	context = {'message': message}
+	template = loader.get_template("message.html")
+
+	temp = str(template.render(context).encode('utf8'))
+
+	return JsonResponse({'messageHTML': temp})
+
+
+
+# This returns a JSON of all previous messages for the paper we are looking at
+@csrf_exempt
+def getMessages(request):
+	message_id = request.POST['id']
+
+	paper = Paper.objects.get(recordID = message_id)
+
+
+	context = {'message': paper.messages}
+	template = loader.get_template("message.html")
+
+	temp = str(template.render(context).encode('utf8'))
+
+
+	return JsonResponse({'message': temp})
 
 
 

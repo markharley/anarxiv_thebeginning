@@ -7,6 +7,7 @@
 	</title>
 	
 	<link rel="stylesheet" href="{% static 'css/home.css' %}">
+	<link rel="stylesheet" href="{% static 'css/paper.css' %}">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 </head>
@@ -22,13 +23,70 @@
 
 		<div id = "content">
 
-		<h2> {{title}} </h2>
-		<h3> {{authors}} </h3>
-		<h3> {{journal_ref}} </h3>
-		<h4> {{paperID}} </h4>
-		<div> {{abstract}} <div>
+		<h2> {{ title }} </h2>
+		<h3> {{ authors }} </h3>
+		<a href= "https://inspirehep.net/record/{{ paperID }}"><h4> Inspires link </h4> </a>
+		<div> {{ abstract }} <div>
+		
+		
+		<textarea rows="4" cols="50"id="messageBox"> Type a message here! </textarea> <br>
+		<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+
+		<div id = "messageApend"> </div>
+
+
+
+
+		<script type="text/javascript">
+		$(document).ready(
 
 		
+
+			$.ajax({
+		         	type: "POST",
+		           	url: "../messagerequest/",
+		           	data: {'id': {{ paperID }} },
+		           	datatype: "JSON",
+
+
+		           	success: function(data){	     
+		           		$('#messageApend').append(data['message']);
+		           	}
+
+		           	})
+
+			);
+
+
+		</script>
+
+
+
+
+		 <script type = "text/javascript">
+
+				function messageSubmitted() {
+
+					var message = document.getElementById("messageBox").value;
+
+		 			$.ajax({
+		         	type: "POST",
+		           	url: "../messagesubmission/",
+		           	data: {'message':message, 'id': {{ paperID }} },
+		           	datatype: "JSON",
+
+		           	success: function(data) {
+		          
+	           			$('#messageApend').append(data['messageHTML']);
+
+			            }
+			         	
+			         	});
+
+					};
+
+			</script>
+
 
 
 

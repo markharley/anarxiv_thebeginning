@@ -8,6 +8,7 @@ class Paper(models.Model):
     abstract = models.TextField()
     # journal_ref = models.CharField(max_length=200)
     recordID = models.CharField(max_length = 100, default = '0')
+    messages = models.TextField(default = "")
   
 
 

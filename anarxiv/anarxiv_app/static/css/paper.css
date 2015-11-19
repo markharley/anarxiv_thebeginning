@@ -1,0 +1,27 @@
+.message{
+	background-color: rgba(0,0,255,0.3);
+
+}
+
+
+#messageApend {
+
+	position: relative;
+	top:50px;
+    overflow:scroll;
+    max-height :470px;
+}
+
+#messageBox {
+	position: relative;
+	top: 20px;
+	height: 100px;
+	width: 400px;
+
+}
+
+#searchbutton{
+	position:relative;
+	top:20px;
+
+}
