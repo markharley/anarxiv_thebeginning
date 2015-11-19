@@ -2,9 +2,13 @@ from django.db import models
 
 # Create your models here.
 
-class paper(models.Model):
+class Paper(models.Model):
     author = models.CharField(max_length = 30)
     title = models.CharField(max_length = 100)
-    bodytext = models.TextField()
-    timestamp = models.DateTimeField()
+    abstract = models.TextField()
+    # journal_ref = models.CharField(max_length=200)
+    recordID = models.CharField(max_length = 100, default = '0')
+  
+
+
 

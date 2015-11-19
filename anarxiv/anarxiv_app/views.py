@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
-from anarxiv_app.models import paper
+from anarxiv_app.models import Paper
 from django.template import Context, Template
 import requests
 
@@ -56,15 +56,28 @@ def search(request, surname):
 		paper['authors'] = Authors
 		paper['no_citations'] = article['number_of_citations']
 
+		# Checks if the paper has already been added, only adds if it has not. Labeled by unique record id
+		num = Paper.objects.filter(recordID = paper['recid']).count()
+		if num == 0:
+			paperObj = Paper(author = Authors, title=paper['title'], abstract = paper['abstract'],recordID = paper['recid'])
+			paperObj.save()
+		
+				
 		
 		renderList.append(str(template.render(paper).encode('utf8')))
 
    	
    	return JsonResponse({'htmlList': renderList})
 
+
 def paperdisplay(request, paperID):
+	paperChoice = Paper.objects.get(recordID = str(paperID))
+
+	
+	context = {'title':paperChoice.title,'authors':paperChoice.author, 'paperID': paperChoice.recordID , 'abstract': paperChoice.abstract}
+
+
 	url = "https://inspirehep.net/"+paperID +"/"
-	context = {'paperID': paperID, 'title': 'baladas', 'authors':'asdasd', 'journal_ref': 'asdas'}
 	return render_to_response('paper.html', context)
 
 
