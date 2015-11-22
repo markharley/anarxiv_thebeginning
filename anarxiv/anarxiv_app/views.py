@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
-from anarxiv_app.models import Paper
+from anarxiv_app.models import Paper, Post
 from django.template import Context, Template
 import requests
 from django.views.decorators.csrf import csrf_exempt
@@ -20,13 +20,15 @@ def subanarxiv(request,area):
 	return render_to_response('subanarxiv.html', context)
 	
 
-
-def search(request, surname):
+@csrf_exempt
+def search(request):
+	surname = request.POST['info'] 
 	
 	baseurl = "https://inspirehep.net/"
-   	url = baseurl + "search?ln=en&p=find+a+" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&ot=recid,number_of_citations,authors,title,abstract"
+   	url = baseurl + "search?ln=en&p=find+a+" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=25&ot=recid,number_of_citations,authors,title,abstract"
    	r = requests.get(url)
-   	
+   
+
    	template = loader.get_template("result_instance.html")
 
 
@@ -92,10 +94,9 @@ def messageSubmission(request):
 	message = request.POST['message']     
 	message_id = request.POST['id']
 
-	paper = Paper.objects.filter(recordID = message_id)
-
-
-	paper.update(messages = message)
+	# Create post object
+	post = Post(paperID = message_id, message = message)
+	post.save()
 
 	context = {'message': message}
 	template = loader.get_template("message.html")
@@ -111,16 +112,17 @@ def messageSubmission(request):
 def getMessages(request):
 	message_id = request.POST['id']
 
-	paper = Paper.objects.get(recordID = message_id)
+	posts = Post.objects.filter(paperID = message_id)
 
-
-	context = {'message': paper.messages}
 	template = loader.get_template("message.html")
+	renderList = []
 
-	temp = str(template.render(context).encode('utf8'))
+	for comment in posts:
+		context = {'message': comment.message}
+		renderList.append(str(template.render(context).encode('utf8')))
+		
 
-
-	return JsonResponse({'message': temp})
+	return JsonResponse({'messageHTML': renderList})
 
 
 

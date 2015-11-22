@@ -38,9 +38,8 @@
 
 
 		<script type="text/javascript">
-		$(document).ready(
 
-		
+		$(document).ready(
 
 			$.ajax({
 		         	type: "POST",
@@ -49,9 +48,15 @@
 		           	datatype: "JSON",
 
 
-		           	success: function(data){	     
-		           		$('#messageApend').append(data['message']);
+		           	success: function(data){	
+
+		           		var length = data['messageHTML'].length;
+		           		
+		           		for(var i =0; i < length; i++){
+		           			$('#messageApend').append(data['messageHTML'][i])
+		       
 		           	}
+		           }
 
 		           	})
 

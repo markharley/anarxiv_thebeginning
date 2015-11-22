@@ -49,27 +49,29 @@
 
 			 <script type = "text/javascript">
 
+
 				function searchButtonClicked() {
 
 					var x = document.getElementById("surname").value;
 		 			$.ajax({
-		         	type: "get",
-		           	url: "../home/search/" + x + "/",
+		         		type: "POST",
+		           		url: "../home/search/",
+		           		data: {'info': x},
+		           		datatype: "JSON",
 
-		           	success: function(data) {
+		           		success: function(data) {
 		          
-		           		var length = data['htmlList'].length;
-		           		$('#test').html(""); // reset search
+		           			var length = data['htmlList'].length;
+		           			$('#test').html(""); // reset search
 		           		
-		           		for(var i =0; i < length; i++){
-		           			$('#test').append(data['htmlList'][i]);
-
-			            }
+		           			for(var i =0; i < length; i++){
+		           				$('#test').append(data['htmlList'][i]);  }
 			        	}
 			         	
 			         	});
 
 					};
+
 
 			</script>
 

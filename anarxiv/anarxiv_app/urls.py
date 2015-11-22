@@ -7,7 +7,7 @@ urlpatterns = [
 
 	url(r'^result/messagerequest/$', views.getMessages, name='getMessages'),
 
-	url(r'^search/(?P<surname>\w{0,10})/$', views.search, name='search'),
+	url(r'^search/$', views.search, name='search'),
 
 	url(r'^subanarxiv/(?P<area>[a-zA-Z0-9._-]+)/$', views.subanarxiv, name='subanarxiv'),
 
