@@ -24,7 +24,12 @@
 		<div id = "content">
 
 		<h2> {{ title }} </h2>
-		<h3> {{ authors }} </h3>
+		
+		<div id = "Authors">
+		<h3 id = "ExtendAuthors"> {{ shortList }} </h3>
+		<h3 id = "test" style="display:none;"> {{ authors }} </h3>
+		</div>
+		
 		<a href= "https://inspirehep.net/record/{{ paperID }}"><h4> Inspires link </h4> </a>
 		<div> {{ abstract }} <div>
 		
@@ -33,6 +38,29 @@
 		<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
 
 		<div id = "messageApend"> </div>
+
+
+
+		<script type="text/javascript">
+			var x = 2;
+			$("#Authors").click( function(){
+		
+				if(x%2==0){
+    				$("#test").css("display", "block");
+    				$("#ExtendAuthors").css("display", "none");
+    				x+=1
+    			}
+    			else{
+    				$("#test").css("display", "none");
+    				$("#ExtendAuthors").css("display", "block");
+    				x+=1;
+
+    			}
+    			});
+
+
+		</script>
+
 
 
 
@@ -46,7 +74,6 @@
 		           	url: "../messagerequest/",
 		           	data: {'id': {{ paperID }} },
 		           	datatype: "JSON",
-
 
 		           	success: function(data){	
 
@@ -64,6 +91,7 @@
 
 
 		</script>
+
 
 
 
