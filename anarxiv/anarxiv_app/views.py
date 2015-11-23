@@ -163,7 +163,7 @@ def messageSubmission(request):
 	post = Post(paperID = message_id, message = message)
 	post.save()
 
-	context = {'message': message}
+	context = {'message': message, 'time': post.date}
 	template = loader.get_template("message.html")
 
 	temp = str(template.render(context).encode('utf8'))
@@ -183,7 +183,7 @@ def getMessages(request):
 	renderList = []
 
 	for comment in posts:
-		context = {'message': comment.message}
+		context = {'message': comment.message, 'time': comment.date}
 		renderList.append(str(template.render(context).encode('utf8')))
 		
 

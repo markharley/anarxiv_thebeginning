@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+import datetime
 
 # Create your models here.
 
@@ -13,5 +15,6 @@ class Paper(models.Model):
 class Post(models.Model):
 	paperID = models.CharField(max_length = 100, default = '0')
 	message = models.TextField(default = "")
+	date = models.DateTimeField('date published', default=datetime.datetime.today)
 
 
