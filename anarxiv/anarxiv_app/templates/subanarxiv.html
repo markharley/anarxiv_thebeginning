@@ -25,6 +25,11 @@
 		<h1> {{ SECTION  }} </h1>
 		
 
+		<div id= "test2"> <br> </div>
+		<div id="spinner" class="spinner" style="display:block;">
+    		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
+		</div>
+
 			</div>
 
 			<div id = "footer">
@@ -32,6 +37,36 @@
 			</div>
 
 		</div>
+
+
+		<script type="text/javascript">
+
+
+		$(document).ready(
+
+			$.ajax({
+		         	type: "POST",
+		           	url: "../new/",
+		           	data: {'sub_anarxiv': '{{ ABREV }}'},
+		           	datatype: "JSON",
+
+		           	success: function(data){	
+		           		$("#spinner").css("display", "none");
+		           		var length = data['htmlList'].length;
+		           		for(var i = 0; i< length; i++){
+		           			$('#test2').append(data['htmlList'][i]); } 
+		           		
+			        	}
+		       }
+		           	
+		           ));
+
+	
+
+
+
+
+		</script>
 
 
 

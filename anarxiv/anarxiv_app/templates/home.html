@@ -24,8 +24,8 @@
 			<h2> Physics </h2>
 
 				<ul>
-			 	 	<li><a href="/home/subanarxiv/astro">Astrophysics</a></li> 
-					<li><a href="/home/subanarxiv/co-mp">Condensed Matter</a></li> 
+			 	 	<li><a href="/home/subanarxiv/astro-ph">Astrophysics</a></li> 
+					<li><a href="/home/subanarxiv/cond-mat">Condensed Matter</a></li> 
 					<li><a href="/home/subanarxiv/gr-qc">General Relativity and Quantum Cosmology (gr-qc new, recent, find)</a></li> 
 					<li><a href="/home/subanarxiv/hep-ex">High Energy Physics - Experiment (hep-ex new, recent, find)</a></li> 
 					<li><a href="/home/subanarxiv/hep-lat">High Energy Physics - Lattice (hep-lat new, recent, find)</a></li> 
@@ -47,8 +47,9 @@
 				
 			<div id="spinner" class="spinner" style="display:none;">
     		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
-
 			</div>
+
+			<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
 			<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 
 
@@ -56,6 +57,7 @@
 
 
 				function searchButtonClicked() {
+					$('#searchFail').css("display","none");
 					$('#test').html("");
 
 					$("#spinner").css("display", "block"); 
@@ -74,7 +76,14 @@
 		           		
 		           			for(var i =0; i < length; i++){
 		           				$('#test').append(data['htmlList'][i]);  }
-			        	}
+			        	},
+
+			        	error: function(jqXHR, textStatus, errorThrown) {
+			        		if(jqXHR.status ==500){
+			        			$("#spinner").css("display", "none");
+			        			$('#searchFail').css("display","block");
+			        		}
+						}
 			         	
 			         	});
 

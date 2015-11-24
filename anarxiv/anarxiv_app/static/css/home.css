@@ -60,6 +60,10 @@ p {
     max-height :450px;
 }
 
+#test2{
+    overflow:scroll;
+    max-height :700px;
+}
 
 #abstractView{
     background-color: #b31b1b;
@@ -111,3 +115,11 @@ p {
     top:100px;
 
 }
+
+#searchFail {
+    position:relative;
+    top:100px;
+}
+
+
+

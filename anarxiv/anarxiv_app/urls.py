@@ -9,6 +9,8 @@ urlpatterns = [
 
 	url(r'^search/$', views.search, name='search'),
 
+	url(r'^subanarxiv/new/$', views.subanarxiv_new, name='subanarxiv_new'),
+
 	url(r'^subanarxiv/(?P<area>[a-zA-Z0-9._-]+)/$', views.subanarxiv, name='subanarxiv'),
 
 	url(r'^result/(?P<paperID>[a-zA-Z0-9._-]+)/$', views.paperdisplay, name='paperdisplay'),
