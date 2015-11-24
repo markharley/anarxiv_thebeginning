@@ -44,6 +44,11 @@
 			<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
 
 			<div id= "test"> <br> </div>
+				
+			<div id="spinner" class="spinner" style="display:none;">
+    		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
+
+			</div>
 			<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 
 
@@ -51,6 +56,9 @@
 
 
 				function searchButtonClicked() {
+					$('#test').html("");
+
+					$("#spinner").css("display", "block"); 
 
 					var x = document.getElementById("surname").value;
 		 			$.ajax({
@@ -60,9 +68,9 @@
 		           		datatype: "JSON",
 
 		           		success: function(data) {
-		          
+		          			$("#spinner").css("display", "none");
+
 		           			var length = data['htmlList'].length;
-		           			$('#test').html(""); // reset search
 		           		
 		           			for(var i =0; i < length; i++){
 		           				$('#test').append(data['htmlList'][i]);  }

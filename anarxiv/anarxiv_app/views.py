@@ -152,7 +152,6 @@ def paperdisplay(request, paperID):
 
 
 
-
 # The submitted message gets added to the Post model and returns the HTML rendered message
 @csrf_exempt
 def messageSubmission(request):
