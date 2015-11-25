@@ -3,56 +3,6 @@ import datetime
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 
-class Paper(models.Model):
-
-	# Should these two be a TextField to prevert overflow?
-	author   = models.CharField(max_length=30)
-	title    = models.CharField(max_length=100)
-	abstract = models.TextField()
-	# journal_ref = models.CharField(max_length=200)
-	recordID = models.CharField(max_length=100, default='0')
-
-class Post(models.Model):
-
-	# Can a post have no message?  Surely we would reject that at the javascript level?
-	paperID = models.CharField(max_length=100, default='0')
-	message = models.TextField(default="")
-
-	# What does te first arg. here do?  Should this be done with Django's auto_now instead...
-	date = models.DateTimeField('date published', default=datetime.datetime.today)
-	# ...like this?
-	# created_at = models.DateTimeField(auto_now_add=True)
-	# updated_at = models.DateTimeField(auto_now=True)
-
-	# Posts should be one-to-one linked with a user
-	user  = models.OneToOneField(User)
-
-	# Posts should be many-to-one linked with a paper.  This lets you get all the post
-	# associated with a paper by doing stuff like...
-	#      paper.post_set.all()
-	# ...to get all posts for a paper or...
-	#      paper.post_set.filter(isAcademic=True)
-	# ...to get only the posts from acadmic users
-	paper = models.ForeignKey(Paper)
-
-	# Can each post be up-voted/down-voted?
-	upVotes = models.IntegerField(default=0)
-	dnVotes = models.IntegerField(default=0)
-
-	# Syntactic sugar methods
-	# What is the net 'scote'for this post?
-	@property
-	def votes(self): return self.upVotes - self.dnVotes
-
-	# Was this post by an academic?
-	@property
-	def isAcademic(self): return self.user.isAcademic
-
-	# What other methods should a post have?
-	def delete(self): pass
-	def reply (self): pass
-	def censor(self): pass
-
 # This defines a sort of handler class for the 'User' Django model below
 class AccountManager(BaseUserManager):
 
@@ -119,3 +69,55 @@ class User(AbstractBaseUser):
 
 	# Provide a convenient output for 'print staffInstance'
 	def __unicode__(self): return self.email
+
+
+class Paper(models.Model):
+
+	# Should these two be a TextField to prevert overflow?
+	author   = models.CharField(max_length=30)
+	title    = models.CharField(max_length=100)
+	abstract = models.TextField()
+	# journal_ref = models.CharField(max_length=200)
+	recordID = models.CharField(max_length=100, default='0')
+
+class Post(models.Model):
+
+	# Can a post have no message?  Surely we would reject that at the javascript level?
+	paperID = models.CharField(max_length=100, default='0')
+	message = models.TextField(default="")
+
+	# What does te first arg. here do?  Should this be done with Django's auto_now instead...
+	date = models.DateTimeField('date published', default=datetime.datetime.today)
+	# ...like this?
+	# created_at = models.DateTimeField(auto_now_add=True)
+	# updated_at = models.DateTimeField(auto_now=True)
+
+	# Posts should be one-to-one linked with a user
+	user  = models.OneToOneField(User)
+
+	# Posts should be many-to-one linked with a paper.  This lets you get all the post
+	# associated with a paper by doing stuff like...
+	#      paper.post_set.all()
+	# ...to get all posts for a paper or...
+	#      paper.post_set.filter(isAcademic=True)
+	# ...to get only the posts from acadmic users
+	paper = models.ForeignKey(Paper)
+
+	# Can each post be up-voted/down-voted?
+	upVotes = models.IntegerField(default=0)
+	dnVotes = models.IntegerField(default=0)
+
+	# Syntactic sugar methods
+	# What is the net 'scote'for this post?
+	@property
+	def votes(self): return self.upVotes - self.dnVotes
+
+	# Was this post by an academic?
+	@property
+	def isAcademic(self): return self.user.isAcademic
+
+	# What other methods should a post have?
+	def delete(self): pass
+	def reply (self): pass
+	def censor(self): pass
+
