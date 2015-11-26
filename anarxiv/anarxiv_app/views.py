@@ -4,7 +4,7 @@ from anarxiv_app.models import Paper, Post
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-import requests, json
+import requests, json, feedparser, re
 
 
 # Create your views here.
@@ -17,25 +17,34 @@ def home(request):
 def subanarxiv_new(request):
 
 	sub_section = str(request.POST['sub_anarxiv'])
-	url = 'http://arxiv.org/list/'+ sub_section+'/new'
-	page = requests.get(url)
-	tree = html.fromstring(page.content)
-	arxivno = tree.xpath('//a[@title="Abstract"]/text()')
-	title = tree.xpath('//div[@class="list-title"]/text()')
+	url = "http://arxiv.org/rss/" + sub_section
+	d = feedparser.parse(url)
+	template = loader.get_template("new_result_instance.html")
+	renderList =[]
 
-	titleList = [i for i in title if i != '\n']
+	for paper in d['entries']:
+		abstract = paper['summary'][3:-2]
+		title = paper['title']
+		
+		authors_unparsed = paper['author']
+		t = re.split(r'<|>',authors_unparsed)
+		a = ""
+
+		if len(t)> 23:
+			authors = a + t[2] + " et al"
+		else:
+			for i in range(2,len(t),4):
+				a+= t[i]+ ", "
+			authors = a[:-2] + "."	
 
 
-	template = loader.get_template("result_instance.html")
-	renderList = []
+		context = {'title': title, 'abstract': abstract, 'authors': authors, 'arxiv_no' : '124214'}
 
-
-	for i in range(len(arxivno)):
-		paper = { 'title': titleList[i],'arxiv_no': arxivno[i] , 'no_citations': '0'}
-		renderList.append(str(template.render(paper).encode('utf8')))
+		renderList.append(str(template.render(context).encode('utf8')))
 
 
 	return JsonResponse({'htmlList': renderList})
+
 
 
 
