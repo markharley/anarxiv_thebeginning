@@ -1,3 +1,6 @@
 from django.contrib import admin
+from anarxiv_app.models import User, Paper, Post
 
-# Register your models here.
+admin.site.register(User)
+admin.site.register(Paper)
+admin.site.register(Post)
