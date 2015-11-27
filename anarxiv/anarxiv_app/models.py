@@ -73,17 +73,28 @@ class User(AbstractBaseUser):
 
 class Paper(models.Model):
 
-	# Should these two be a TextField to prevert overflow?
-	author   = models.CharField(max_length=30)
-	title    = models.CharField(max_length=100)
-	abstract = models.TextField()
-	# journal_ref = models.CharField(max_length=200)
-	recordID = models.CharField(max_length=100, default='0')
+	title    = models.TextField(null = True)
+	abstract = models.TextField(null = True)
+
+	Inspires_no = models.CharField(max_length=100, null = True)
+	arxiv_no = models.CharField(max_length=50, null = True )
+
+	Citation_count = models.IntegerField(null = True)
+
+class Author(models.Model):
+	
+	firstName = models.TextField(null = True)
+	secondName = models.TextField(null = True)
+	BAI = models.CharField(max_length = 10, null = True) # Inspires unique author id
+
+	articles = models.ManyToManyField(Paper)   # Papers assigned to this author
+
+
 
 class Post(models.Model):
 
 	# Can a post have no message?  Surely we would reject that at the javascript level?
-	paperID = models.CharField(max_length=100, default='0')
+	# Inspires_no = models.CharField(max_length=100, default='0')
 	message = models.TextField(default="")
 
 	# What does te first arg. here do?  Should this be done with Django's auto_now instead...
@@ -93,7 +104,7 @@ class Post(models.Model):
 	# updated_at = models.DateTimeField(auto_now=True)
 
 	# Posts should be one-to-one linked with a user
-	user  = models.OneToOneField(User)
+	# user  = models.OneToOneField(User)
 
 	# Posts should be many-to-one linked with a paper.  This lets you get all the post
 	# associated with a paper by doing stuff like...

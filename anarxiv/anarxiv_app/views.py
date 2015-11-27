@@ -1,10 +1,10 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
-from anarxiv_app.models import Paper, Post
+from anarxiv_app.models import Paper, Post, Author
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-import requests, json
+import requests, json, feedparser, re
 
 
 # Create your views here.
@@ -17,25 +17,34 @@ def home(request):
 def subanarxiv_new(request):
 
 	sub_section = str(request.POST['sub_anarxiv'])
-	url = 'http://arxiv.org/list/'+ sub_section+'/new'
-	page = requests.get(url)
-	tree = html.fromstring(page.content)
-	arxivno = tree.xpath('//a[@title="Abstract"]/text()')
-	title = tree.xpath('//div[@class="list-title"]/text()')
+	url = "http://arxiv.org/rss/" + sub_section
+	d = feedparser.parse(url)
+	template = loader.get_template("new_result_instance.html")
+	renderList =[]
 
-	titleList = [i for i in title if i != '\n']
+	for paper in d['entries']:
+		abstract = paper['summary'][3:-2]
+		title = paper['title']
+		
+		authors_unparsed = paper['author']
+		t = re.split(r'<|>',authors_unparsed)
+		a = ""
+
+		if len(t)> 23:
+			authors = a + t[2] + " et al"
+		else:
+			for i in range(2,len(t),4):
+				a+= t[i]+ ", "
+			authors = a[:-2] + "."	
 
 
-	template = loader.get_template("result_instance.html")
-	renderList = []
+		context = {'title': title, 'abstract': abstract, 'authors': authors, 'arxiv_no' : '124214'}
 
-
-	for i in range(len(arxivno)):
-		paper = { 'title': titleList[i],'arxiv_no': arxivno[i] , 'no_citations': '0'}
-		renderList.append(str(template.render(paper).encode('utf8')))
+		renderList.append(str(template.render(context).encode('utf8')))
 
 
 	return JsonResponse({'htmlList': renderList})
+
 
 
 
@@ -112,71 +121,74 @@ def search(request):
 # This function takes the paperID, performs the search and stores the paper in the Model.
 def paperStore(paperID):
 	
-	num = Paper.objects.filter(recordID = paperID).count()
+	url = "https://inspirehep.net/record/"+paperID+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract"
+	r = requests.get(url).json()[0]
+	title = r['title']['title']	
+	Inspires_no = r['recid']
 
-	# Checks if the paper has already been added, only adds if it has not. Labeled by unique record id
-	if num == 0:
-		url = "https://inspirehep.net/record/"+paperID+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract"
-		r = requests.get(url).json()[0]
-		title = r['title']['title']	
-		recordID = r['recid']
-
-		# The format the abstracts come in is non standard, this seems to pick up the cases well enough....
-		if 'abstract' in r:
-			if isinstance(r['abstract'], list):
-				abstract = r['abstract'][0]['summary']
-			else:
-				abstract = r['abstract']['summary']
+	# The format the abstracts come in is non standard, this seems to pick up the cases well enough....
+	if 'abstract' in r:
+		if isinstance(r['abstract'], list):
+			abstract = r['abstract'][0]['summary']
 		else:
-			abstract = "No abstract"	
+			abstract = r['abstract']['summary']
+	else:
+		abstract = "No abstract"	
 
 
-		length = len(r['authors'])
+	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no)
+	paperObj.save()	
 
-		Authors = ""
-		
-		# At the moment I am storing the authors as a string in the model - this is perhaps not ideal....
-		for j in range(length):
-			Authors += (r['authors'][j]['first_name']) + " " +(r['authors'][j]['last_name']) 
-			if j==length-1:
-				Authors += '.'
-			else:
-				Authors += ', '	
+	length = len(r['authors'])
 
-		authors = Authors
+	for i in range(length):
+		PaperObj = Paper.objects.get(Inspires_no = Inspires_no)
 
-		paperObj = Paper(author = authors, title = title, abstract = abstract, recordID = recordID)
-		paperObj.save()
+		# Checks to see if the Author is already in the database (use unique id in future)
+		if Author.objects.filter(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name']).count() == 0:
+			
+			temp = Author(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name'] )
+			temp.save()
+			temp.articles.add(PaperObj)
+			
+		# Adds the paper to the Author
+		else:
+			temp = Author.objects.get(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name'])
+			temp.articles.add(PaperObj)	
+	
+				
+
 
 
 # This creates the single paper page HTML
 def paperdisplay(request, paperID):
-	# We store the paper in the Model
-	paperStore(paperID)
+	
+	# We store the paper in the Model if it is not already in the model
+	num = Paper.objects.filter(Inspires_no = paperID).count()
+	
+	if num == 0:
+		paperStore(paperID)
 
-	paperChoice = Paper.objects.get(recordID = str(paperID))
+	paperChoice = Paper.objects.get(Inspires_no = paperID)
 
-	Authors = paperChoice.author.split(',')
+	# Returns set of authors related to this paper
+	AuthorList = paperChoice.author_set.all()
 
 	allAuthors =""
 
-	length = len(Authors)
+	for author in AuthorList:
+		allAuthors += author.firstName + " " + author.secondName +   ", "
+	allAuthors[:-1] + "."     # Sticks a full stop on the end because pretty
 	
-
-	for author in Authors:
-		allAuthors += author
-		if author != Authors[length-1]:
-			allAuthors += ', '	
+	# Prints "et al" for large numbers of authors
+	if len(AuthorList) > 5:		
+		shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
 	
-	if length > 5:		
-		shortList = Authors[0] + " et al..."		
 	else: 
 		shortList = allAuthors	
 
-	context = {'title':paperChoice.title,'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.recordID , 'abstract': paperChoice.abstract}
+	context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract}
 
-
-	url = "https://inspirehep.net/"+paperID +"/"
 	return render_to_response('paper.html', context)
 
 
@@ -188,11 +200,13 @@ def messageSubmission(request):
 	message = request.POST['message']     
 	message_id = request.POST['id']
 
+	paper = Paper.objects.get(Inspires_no = message_id)
+
 	# Create post object
-	post = Post(paperID = message_id, message = message)
+	post = Post(message = message, paper = paper)
 	post.save()
 
-	context = {'message': message, 'time': post.date}
+	context = {'message': post.message, 'time': post.date}
 	template = loader.get_template("message.html")
 
 	temp = str(template.render(context).encode('utf8'))
@@ -206,7 +220,9 @@ def messageSubmission(request):
 def getMessages(request):
 	message_id = request.POST['id']
 
-	posts = Post.objects.filter(paperID = message_id)
+	paper = Paper.objects.get(Inspires_no = message_id)
+
+	posts = paper.post_set.all()
 
 	template = loader.get_template("message.html")
 	renderList = []
