@@ -12,11 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
-            model_name='paper',
-            name='bodytext',
-        ),
-        migrations.RemoveField(
-            model_name='paper',
-            name='timestamp',
+            model_name='post',
+            name='paperID',
         ),
     ]

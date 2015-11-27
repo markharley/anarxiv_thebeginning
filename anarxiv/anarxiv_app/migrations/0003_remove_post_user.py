@@ -7,13 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('anarxiv_app', '0013_auto_20151126_2055'),
+        ('anarxiv_app', '0002_remove_post_paperid'),
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
             model_name='post',
-            name='paper',
-            field=models.ForeignKey(to='anarxiv_app.Paper'),
+            name='user',
         ),
     ]
