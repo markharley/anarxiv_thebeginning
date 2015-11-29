@@ -7,11 +7,17 @@ from lxml import html
 import requests, json, feedparser, re
 
 
+subAnarxivDictionary = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter', 'gr-qc': 'General Relativity and Quantum Cosmology', 'hep-ex':'High Energy Physics - Experiment',
+'hep-ph':'High Energy Physics - Phenomenology','hep-th':'High Energy Physics-Theory','hep-lat':'High Energy Physics - Lattice', 'math-ph': 'Mathematical Physics', 'nlin':'Nonlinear Sciences', 
+'nucl-ex':'Nuclear Experiment','nucl-th':'Nuclear Theory','physics':'Physics','quant-ph':'Quantum Physics'}
+
+
+
 # Create your views here.
 
 
 def home(request):
-     return render_to_response('home.html')
+     return render_to_response('home.html',{'subAnarxivs':subAnarxivDictionary})
 
 @csrf_exempt
 def subanarxiv_new(request):
@@ -52,10 +58,7 @@ def subanarxiv_new(request):
 
 
 def subanarxiv(request,area):
-	subAreas = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter', 'gr-qc': 'General Relativity and Quantum Cosmology', 'hep-ex':'High Energy Physics - Experiment',
-	'hep-ph':'High Energy Physics - Phenomenology','hep-th':'High Energy Physics-Theory','hep-lat':'High Energy Physics - Lattice', 'math-ph': 'Mathematical Physics', 'nlin':'Nonlinear Sciences', 
-	'nucl-ex':'Nuclear Experiment','nucl-th':'Nuclear Theory','physics':'Physics','quant-ph':'Quantum Physics'}
-	context = {"SECTION": subAreas[str(area)], "ABREV": area}
+	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area}
 	return render_to_response('subanarxiv.html', context)
 
 # Creates a dictionary that can be rendered to HTML to display the search results
