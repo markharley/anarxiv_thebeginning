@@ -15,5 +15,7 @@ urlpatterns = [
 
 	url(r'^result/(?P<paperID>[a-zA-Z0-9._-]+)/$', views.paperdisplay, name='paperdisplay'),
 
+	url(r'^login/', views.login, name='login'),
+
     url(r'^$', views.home, name='home'),
 ]

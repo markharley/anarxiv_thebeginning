@@ -20,6 +20,12 @@ def home(request):
      return render_to_response('home.html',{'subAnarxivs':subAnarxivDictionary})
 
 @csrf_exempt
+def login(request):
+	attemptedUser = request.POST['user']
+	attemptedPassword = request.POST['password']
+	return JsonResponse({'username' : attemptedUser})
+
+@csrf_exempt
 def subanarxiv_new(request):
 
 	sub_section = str(request.POST['sub_anarxiv'])
@@ -50,11 +56,6 @@ def subanarxiv_new(request):
 
 
 	return JsonResponse({'htmlList': renderList})
-
-
-
-
-
 
 
 def subanarxiv(request,area):

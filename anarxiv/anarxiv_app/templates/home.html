@@ -28,10 +28,11 @@
 	    			<p>Please enter your username and password</p>
 	    			<form id="loginForm" action method="#">
 	    			<input id="loginUser" type="text" placeholder="username">
-	    			<input id="loginPassword" type="password" placeholder="password">
+	    			<input id="loginPassword" type="password">
 	    			</form>
 	    		</div>
 	    		<div class="modal-footer">
+	    			<button type="button" class="btn btn-default" onclick="loginAttempt()">Login</button>
 	    			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 	    		</div>
 			</div>
@@ -135,6 +136,30 @@
 						$("#userNotLoggedIn").removeClass("hidden");
 					}
 				};
+
+				function loginAttempt(){
+					var loginUser = document.getElementById("loginUser").value;
+					var loginPassword = document.getElementById("loginPassword").value;
+					$.ajax({
+						type: "POST",
+						url: "login/",
+						data: {"user" : loginUser, "password" : loginPassword}, 
+						datatype: "JSON",
+
+						success: function(data) {
+							if (data["error"]) {
+								renderError();
+							} else {
+								user = data["username"];
+								renderLoggedInView();
+							}
+						},
+
+						error: function(jqXHR, textStatus, errorThrown) {
+							renderError();
+						}
+					});
+				}
 
 			</script>
 
