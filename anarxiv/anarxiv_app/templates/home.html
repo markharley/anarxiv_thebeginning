@@ -15,51 +15,50 @@
 
 <body>
 
+	<div class="modal fade" tabindex="-1" id="loginModal" role="dialog">
+		<div class="modal-dialog">
 
-	<div id = "wrapper">
+	    		<!-- Modal content-->
+	    		<div class="modal-content">
+	    		<div class="modal-header">
+	    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+	    			<h4 class="modal-title">Login</h4>
+	    		</div>
+	    		<div class="modal-body">
+	    			<p>Please enter your username and password</p>
+	    			<form id="loginForm" action method="#">
+	    			<input id="loginUser" type="text" placeholder="username">
+	    			<input id="loginPassword" type="password" placeholder="password">
+	    			</form>
+	    		</div>
+	    		<div class="modal-footer">
+	    			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	    		</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div id="wrapper">
 
 		<div id = "header">
 			<h1> Welcome to the <a id = "homelink" href = "/home/">ANARXIV </a>: The place where you can call academics out.</h1>
-			<div id = "userNotLoggedIn" 
-				{% if user.is_authenticated %} 
-					class="hidden hangright" 
-				{% else %} 
-					class="hangright" 
-				{% endif %} > 
-				<a href="#" data-toggle="modal" data-backdrop="" data-keyboard="false" data-target="#loginModal"> Login </href> 
+			<div id = "userNotLoggedIn"
+				{% if user.is_authenticated %}
+					class="hidden hangright"
+				{% else %}
+					class="hangright"
+				{% endif %} >
+				<a href="#" data-toggle="modal" data-target="#loginModal"> Login </href>
 			</div>
-			<div id = "userLoggedIn" 
-				{% if not user.is_authenticated %} 
-					class="hidden hangright" 
-				{% else %} 
-					class="hangright" 
+			<div id = "userLoggedIn"
+				{% if not user.is_authenticated %}
+					class="hidden hangright"
+				{% else %}
+					class="hangright"
 				{% endif %} >
 				<h3> Hello {{user.name}} </h3>
 			</div>
-		</div>
-
-		  <div class="modal fade in" tabindex="-1" id="loginModal" role="dialog">
-		    <div class="modal-dialog">
-		    
-		      	<!-- Modal content-->
-		    	<div class="modal-content">
-		        <div class="modal-header">
-		          	<button type="button" class="close" data-dismiss="modal">&times;</button>
-		          	<h4 class="modal-title">Login</h4>
-		        </div>
-		        <div class="modal-body">
-		          	<p>Please enter your username and password</p>
-		          	<form id="loginForm" action method="#">
-		          		<input id="loginUser" type="text" placeholder="username">
-		          		<input id="loginPassword" type="password" placeholder="password">
-		          	</form>
-		        </div>
-		        <div class="modal-footer">
-		          	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-		        </div>
-		    </div>
-
-		  	</div>
 		</div>
 
 		<div id = "content">
@@ -71,30 +70,28 @@
 				</ul>
 
 			<button type="button" onclick="toggleClicked()" id = "toggleButton">Log Me In</button>
-			<div id="username"> 
+			<div id="username">
 				<span>No user</span>
 			</div>
-			<input type="text" id="surname" value="bartrum"> 
+			<input type="text" id="surname" value="bartrum">
 			<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
 
 			<div id= "test"> <br> </div>
-				
+
 			<div id="spinner" class="spinner" style="display:none;">
-    		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
+    				<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
 			</div>
 
 			<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
 			<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 
-
 			 <script type = "text/javascript">
-
 
 				function searchButtonClicked() {
 					$('#searchFail').css("display","none");
 					$('#test').html("");
 
-					$("#spinner").css("display", "block"); 
+					$("#spinner").css("display", "block");
 
 					var x = document.getElementById("surname").value;
 		 			$.ajax({
@@ -107,7 +104,7 @@
 		          			$("#spinner").css("display", "none");
 
 		           			var length = data['htmlList'].length;
-		           		
+
 		           			for(var i =0; i < length; i++){
 		           				$('#test').append(data['htmlList'][i]);  }
 			        	},
@@ -118,12 +115,12 @@
 			        			$('#searchFail').css("display","block");
 			        		}
 						}
-			         	
+
 			         	});
 
 					};
 
-				{% if not user.is_authenticated %} 
+				{% if not user.is_authenticated %}
 					var user = null;
 				{% else %}
 					var user="{{user.name}}";
@@ -141,20 +138,12 @@
 
 			</script>
 
-
-
 			</div>
 
 			<div id = "footer">
 				This is in no way associated with the arxiv.....
 			</div>
-
-
 		</div>
-
-
-
-
 </body>
 
 </html>
