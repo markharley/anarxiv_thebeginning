@@ -29,7 +29,7 @@ def login(request):
 		return JsonResponse({'loginError' : 'true'})
 
 	user = authenticate(username=attemptedUsername, password=attemptedPassword)
-	
+
 	if user is not None:
 		return JsonResponse({'username' : user.username})
 	else:

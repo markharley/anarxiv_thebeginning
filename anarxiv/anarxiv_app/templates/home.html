@@ -60,7 +60,7 @@
 				{% else %}
 					class="hangright"
 				{% endif %} >
-				<h3> Hello {{user.name}} </h3>
+				<p> Hello <span id="userNameField">{{user.name}}</span>, <a href="/logout/">logout</a> </p>
 			</div>
 		</div>
 
@@ -132,6 +132,7 @@
 					if (user) {
 						$("#userLoggedIn").removeClass("hidden");
 						$("#userNotLoggedIn").addClass("hidden");
+						document.getElementById("userNameField").innerHTML=user;
 					} else {
 						$("#userLoggedIn").addClass("hidden");
 						$("#userNotLoggedIn").removeClass("hidden");
