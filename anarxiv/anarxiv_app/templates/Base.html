@@ -5,20 +5,9 @@
 	<title>
 		This is the homepage
 	</title>
-
-	<!-- BOOTSTRAP IMPORTS -->
-	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<!-- jQuery library -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-	<!-- Latest compiled JavaScript -->
-	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<!-- Makes the divice cross platform compatible	 -->
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-
-
-	<!-- OUR OWN CONSTRUCTIONS -->
+	
 	<link rel="stylesheet" href="{% static 'css/home.css' %}">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 </head>
 
@@ -51,8 +40,8 @@
 				</ul>
 
 
-			<input type="text" id="searchField" value="bartrum"> 
-			<button type="button" onclick="searchButtonClicked()" id = "searchButton" class="btn btn-primary btn-sm">Search</button>
+			<input type="text" id="surname" value="bartrum"> 
+			<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
 
 			<div id= "test"> <br> </div>
 				
@@ -73,7 +62,7 @@
 
 					$("#spinner").css("display", "block"); 
 
-					var x = document.getElementById("searchField").value;
+					var x = document.getElementById("surname").value;
 		 			$.ajax({
 		         		type: "POST",
 		           		url: "../home/search/",
@@ -86,7 +75,10 @@
 		           			var length = data['htmlList'].length;
 		           		
 		           			for(var i =0; i < length; i++){
-		           				$('#test').append(data['htmlList'][i]);  }
+		           				$('#test').append(data['htmlList'][i]);
+		           				
+
+		           			}
 			        	},
 
 			        	error: function(jqXHR, textStatus, errorThrown) {

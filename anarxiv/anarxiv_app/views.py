@@ -48,9 +48,6 @@ def subanarxiv_new(request):
 
 
 
-
-
-
 def subanarxiv(request,area):
 	subAreas = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter', 'gr-qc': 'General Relativity and Quantum Cosmology', 'hep-ex':'High Energy Physics - Experiment',
 	'hep-ph':'High Energy Physics - Phenomenology','hep-th':'High Energy Physics-Theory','hep-lat':'High Energy Physics - Lattice', 'math-ph': 'Mathematical Physics', 'nlin':'Nonlinear Sciences', 
@@ -72,6 +69,13 @@ def paperSearchDisplay(article):
 			paper['abstract'] = article['abstract']['summary']
 	else:
 		paper['abstract'] = "No abstract"		
+
+
+	# Gets the journal information
+	info = article['publication_info']	
+	journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
+	paper['journal_ref'] = journal_ref
+
 
 	length = len(article['authors'])
 
@@ -121,7 +125,7 @@ def search(request):
 # This function takes the paperID, performs the search and stores the paper in the Model.
 def paperStore(paperID):
 	
-	url = "https://inspirehep.net/record/"+paperID+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract"
+	url = "https://inspirehep.net/record/"+paperID+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info"
 	r = requests.get(url).json()[0]
 	title = r['title']['title']	
 	Inspires_no = r['recid']
@@ -135,10 +139,15 @@ def paperStore(paperID):
 	else:
 		abstract = "No abstract"	
 
+	# Create the journal ref
+	info = r['publication_info']	
+	journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
 
-	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no)
+	# Save the paper to the database
+	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no, journal = journal_ref)
 	paperObj.save()	
 
+	# Adds the authors to the database ad links them to the paper
 	length = len(r['authors'])
 
 	for i in range(length):
@@ -177,8 +186,8 @@ def paperdisplay(request, paperID):
 	allAuthors =""
 
 	for author in AuthorList:
-		allAuthors += author.firstName + " " + author.secondName +   ", "
-	allAuthors[:-1] + "."     # Sticks a full stop on the end because pretty
+		allAuthors += author.firstName + " " + author.secondName + ", "
+	allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
 	
 	# Prints "et al" for large numbers of authors
 	if len(AuthorList) > 5:		
@@ -187,7 +196,7 @@ def paperdisplay(request, paperID):
 	else: 
 		shortList = allAuthors	
 
-	context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract}
+	context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal}
 
 	return render_to_response('paper.html', context)
 

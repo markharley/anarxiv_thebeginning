@@ -75,6 +75,7 @@ class Paper(models.Model):
 
 	title    = models.TextField(null = True)
 	abstract = models.TextField(null = True)
+	journal = models.TextField(null = True)
 
 	Inspires_no = models.CharField(max_length=100, null = True)
 	arxiv_no = models.CharField(max_length=50, null = True )

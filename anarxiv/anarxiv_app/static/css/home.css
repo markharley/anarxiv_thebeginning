@@ -1,3 +1,5 @@
+/* GLOBAL CLASS STYLINGS*/
+
 html,
 body {
     margin:0;
@@ -12,9 +14,7 @@ p {
 }
 
 
-#paperlink {
-      text-decoration:none;
-}
+/*SECTION STYLINGS*/
 
 #wrapper {
     min-height:100%;
@@ -33,7 +33,7 @@ p {
 #footer {
     background-color: #b31b1b;
     width:100%;
-    height:20px;
+    height:30px;
     position:absolute;
     bottom:0;
     left:0;
@@ -42,24 +42,30 @@ p {
     color: rgb(255,255,255);
 }
 
+/*ADDITIONAL HEADER OBJECT STYLIGNS*/
 
+#homelink{
+    text-decoration:none;
+    color: white;
+
+}
+
+/*SEARCH BUTTON*/
 
 #searchButton{
     margin:3px;
-    padding:2px;
+    padding:3px;
 
  }
 
-#surname{
+/*SEARCH ENTRY FIELD*/
+#searchField{
     margin:3px;
     padding:2px;
 }
 
-#test{
-    overflow:scroll;
-    max-height :450px;
-}
 
+/*SUBANARXIV SEARCH ENVIRONMENT*/
 #test2{
     overflow:scroll;
     max-height :700px;
@@ -71,7 +77,8 @@ p {
 }
 
 
-/* CSS styling for the search results*/
+
+/* CSS styling for the individual search results*/
 .tooltip {
     display:none;
     position:absolute;
@@ -82,7 +89,6 @@ p {
     color:#fff;
     font-size:12px Arial;
 }
-
 
 #result{
     color:rgb(0,0,0);
@@ -97,17 +103,22 @@ p {
 #title{
     font-weight: bold;
  }
-#homelink{
-    text-decoration:none;
-    color: white;
 
+#paperlink {
+      text-decoration:none;
 }
 
-#message_time{
-    font-size: 11;
-    position: relative;
-    top:2px;
+#journal_ref{
+    font-size: 10;
 }
+
+/*SEARCH ANIMATIONS / FAILURE*/
+
+#test{
+    overflow:scroll;
+    max-height :450px;
+}
+
 
 .spinner{
     position:relative;
@@ -120,6 +131,20 @@ p {
     position:relative;
     top:100px;
 }
+
+
+
+/*STYLINGS FOR THE MESSAGES*/
+
+#message_time{
+    font-size: 11;
+    position: relative;
+    top:2px;
+}
+
+
+
+
 
 
 
