@@ -60,7 +60,8 @@
 				{% else %}
 					class="hangright"
 				{% endif %} >
-				<p> Hello <span id="userNameField">{{user.username}}</span>, <a href="/logout/">logout</a> </p>
+				<p> Hello <span id="userNameField">{{user.username}}</span>! <a href="#" onclick="logout()">Logout</a> </p>
+				<p class="hidden" id="logoutErrorMessage"> Logout failed, try again. </p>
 			</div>
 		</div>
 
@@ -141,7 +142,7 @@
 					var loginPassword = document.getElementById("loginPassword").value;
 					$.ajax({
 						type: "POST",
-						url: "login/",
+						url: "/home/login/",
 						data: {"user" : loginUser, "password" : loginPassword}, 
 						datatype: "JSON",
 
@@ -160,6 +161,26 @@
 						}
 					});
 				};
+
+				function logout(){
+					$.ajax({
+						type: "GET",
+						url: "/home/logout/",
+
+						success: function(data){
+							if (data["success"]){
+								user = null;
+								renderLoggedInView();
+							} else {
+								$("#logoutErrorMessage").removeClass("hidden");
+							}
+						},
+
+						error: function(jqXHR,textStatus,errorThrown){
+							$("#logoutErrorMessage").removeClass("hidden");
+						}
+					})
+				}
 
 			</script>
 

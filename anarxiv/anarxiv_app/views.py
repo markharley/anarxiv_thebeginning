@@ -5,7 +5,7 @@ from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
 import requests, json, feedparser, re
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
 
 subAnarxivDictionary = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter', 'gr-qc': 'General Relativity and Quantum Cosmology', 'hep-ex':'High Energy Physics - Experiment',
@@ -35,6 +35,14 @@ def login(request):
 		return JsonResponse({'username' : user.username})
 	else:
 		return JsonResponse({'loginError' : 'true'})
+
+@csrf_exempt
+def logout(request):
+	try:
+		result=auth_logout(request)
+	except:
+		return JsonResponse({})
+	return JsonResponse({"success" : "true"})
 
 @csrf_exempt
 def subanarxiv_new(request):
