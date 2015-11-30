@@ -32,6 +32,8 @@
 	    			</form>
 	    		</div>
 	    		<div class="modal-footer">
+	    			<p id="loginErrorMessage" class="hidden"> Invalid username or password, please try again. </p>
+	    			<p id="loginServerError" class="hidden"> Failed to contact the server, please try again later. </p>
 	    			<button type="button" class="btn btn-default" onclick="loginAttempt()">Login</button>
 	    			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 	    		</div>
@@ -70,7 +72,6 @@
 					{% endfor %}
 				</ul>
 
-			<button type="button" onclick="toggleClicked()" id = "toggleButton">Log Me In</button>
 			<div id="username">
 				<span>No user</span>
 			</div>
@@ -147,19 +148,20 @@
 						datatype: "JSON",
 
 						success: function(data) {
-							if (data["error"]) {
-								renderError();
+							if (data["loginError"]) {
+								$("#loginErrorMessage").removeClass("hidden");
 							} else {
 								user = data["username"];
 								renderLoggedInView();
+								$("#loginModal").modal("hide");
 							}
 						},
 
 						error: function(jqXHR, textStatus, errorThrown) {
-							renderError();
+							$("#loginServerError").removeClass("hidden");
 						}
 					});
-				}
+				};
 
 			</script>
 
