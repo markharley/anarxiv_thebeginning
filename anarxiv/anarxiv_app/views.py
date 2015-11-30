@@ -18,7 +18,7 @@ subAnarxivDictionary = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter
 
 
 def home(request):
-     return render_to_response('home.html',{'subAnarxivs':subAnarxivDictionary})
+     return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
 
 @csrf_exempt
 def login(request):
