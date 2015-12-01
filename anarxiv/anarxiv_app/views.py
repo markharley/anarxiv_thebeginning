@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
-from anarxiv_app.models import Paper, Post, Author, newPaper
+from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
@@ -30,14 +30,17 @@ def subanarxiv(request,area):
 	context = {"SECTION": subAreas[str(area)], "ABREV": area}
 	return render_to_response('subanarxiv.html', context)
 
-# Method to rip the papers off the RSS feeds and store in the newPaper table
-def getDailyPapers(request):
-	# Work out how to trigger this from a cron set up
+# Method to rip the papers off the RSS feeds and store in the newPaper table, called by "python manage.py getNewPapers"
+def getDailyPapers():
 
 	# This wipes the table
 	newPaper.objects.all().delete()
+	subArxiv.objects.all().delete()
 
 	for sub_section in subAreas:
+		subarx = subArxiv(region = sub_section)
+		subarx.save()
+
 		url = "http://arxiv.org/rss/" + sub_section
 		papers = feedparser.parse(url)['entries']
 		
@@ -46,10 +49,15 @@ def getDailyPapers(request):
 			title = paper['title']
 			arxiv_no = paper['id'].split("/")[-1]
 			
-			# Adding the paper to the temperary model
-			tempPap = newPaper(title = title, abstract = abstract, subarxiv = sub_section, arxiv_no = arxiv_no)
-			tempPap.save()	
+			# Adding the paper to the temperary model only adds the paper if is not already in the database
+			if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 0:
+				tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no)
+				tempPap.save()	
+				tempPap.area.add(subarx)
 
+			else:
+				temp = newPaper.objects.get(arxiv_no = arxiv_no)
+				temp.area.add(subarx)
 
 			# Relating the paper to the relevant authors - NEED TO SORT OUT ASCII TO UTF8 ENCODING
 			authors_unparsed = paper['author']
@@ -75,40 +83,66 @@ def getDailyPapers(request):
 	# allows for a test				
 	return render_to_response('home.html') 				
 
-
 # This takes the recently added papers out of the newPaper table and returns a rendered html response			
 @csrf_exempt
 def dailyPaperDisplay(request):
 	sub_section = str(request.POST['sub_anarxiv'])
+	area = subArxiv.objects.get(region = sub_section)
 
-	papers = newPaper.objects.filter(subarxiv = sub_section)
+	papers = area.newpaper_set.all()
 
-	template = loader.get_template("result_instance.html")
+	template = loader.get_template("new_result_instance.html")
 	renderList =[]
 
 	for paper in papers:
 		AuthorList = paper.author_set.all()
+		allAuthors =""
 
 		for author in AuthorList:
-			allAuthors =""
 
 			allAuthors += author.firstName + " " + author.secondName + ", "
-			allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
-		
-			# Prints "et al" for large numbers of authors
-			if len(AuthorList) > 5:		
-				shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
-		
-			else: 
-				shortList = allAuthors	
+			
+		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
+			
+		# Prints "et al" for large numbers of authors
+		if len(AuthorList) > 5:		
+			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
+			allAuthors = shortList	
+	
+		else: 
+			shortList = allAuthors	
 
-		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : '124214'}
+				
+
+		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : paper.arxiv_no, 'subanarxiv':subanarxiv}
 
 		renderList.append(str(template.render(context).encode('utf8')))	
 
 
 	return JsonResponse({'htmlList': renderList})
 
+
+def singlePaperView(request, arxivno):
+	paper = newPaper.objects.get(arxiv_no = arxivno)
+
+	# Returns set of authors related to this paper
+	AuthorList = paper.author_set.all()
+
+	allAuthors =""
+
+	for author in AuthorList:
+		allAuthors += author.firstName + " " + author.secondName + ", "
+	allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
+	
+	# Prints "et al" for large numbers of authors
+	if len(AuthorList) > 5:		
+		shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
+	
+	else: 
+		shortList = allAuthors	
+
+	context = {'title': paper.title, 'authors':allAuthors, 'shortList': shortList, 'abstract': paper.abstract, 'journal_ref':paper.journal}
+	return render_to_response('paper.html', context)
 
 
 ########################################################################################################################################################################################################

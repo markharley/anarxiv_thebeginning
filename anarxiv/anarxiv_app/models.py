@@ -70,6 +70,9 @@ class User(AbstractBaseUser):
 	# Provide a convenient output for 'print staffInstance'
 	def __unicode__(self): return self.email
 
+# Each subarxiv is a model
+class subArxiv(models.Model):
+	region = models.TextField(null = True)
 
 class Paper(models.Model):
 
@@ -90,13 +93,14 @@ class newPaper(models.Model):
 	title    = models.TextField(null = True)
 	abstract = models.TextField(null = True)
 	journal = models.TextField(null = True)
-	subarxiv = models.TextField(null =  True)
 
 	Inspires_no = models.CharField(max_length=100, null = True)
 	arxiv_no = models.CharField(max_length=50, null = True )
 
 	# Tracks the date the paper was added to the arxiv
 	added_at = models.DateTimeField(auto_now_add=True)
+
+	area = models.ManyToManyField(subArxiv)
 
 
 
