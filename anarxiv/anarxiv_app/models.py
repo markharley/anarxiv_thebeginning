@@ -82,6 +82,24 @@ class Paper(models.Model):
 
 	Citation_count = models.IntegerField(null = True)
 
+
+
+# Temporary table to store the daily papers as they appear on the arxiv, they will get transfered to Paper model and wiped from here.
+class newPaper(models.Model):
+
+	title    = models.TextField(null = True)
+	abstract = models.TextField(null = True)
+	journal = models.TextField(null = True)
+	subarxiv = models.TextField(null =  True)
+
+	Inspires_no = models.CharField(max_length=100, null = True)
+	arxiv_no = models.CharField(max_length=50, null = True )
+
+	# Tracks the date the paper was added to the arxiv
+	added_at = models.DateTimeField(auto_now_add=True)
+
+
+
 class Author(models.Model):
 	
 	firstName = models.TextField(null = True)
@@ -90,7 +108,7 @@ class Author(models.Model):
 
 	articles = models.ManyToManyField(Paper)   # Papers assigned to this author
 
-
+	newarticles = models.ManyToManyField(newPaper)   # New daily papers assigned to this author
 
 class Post(models.Model):
 
@@ -132,4 +150,20 @@ class Post(models.Model):
 	def delete(self): pass
 	def reply (self): pass
 	def censor(self): pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

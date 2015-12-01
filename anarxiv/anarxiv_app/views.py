@@ -1,61 +1,124 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
-from anarxiv_app.models import Paper, Post, Author
+from anarxiv_app.models import Paper, Post, Author, newPaper
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
+from datetime import datetime
 import requests, json, feedparser, re
 
 
-# Create your views here.
+subAreas = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter', 'gr-qc': 'General Relativity and Quantum Cosmology', 'hep-ex':'High Energy Physics - Experiment',
+'hep-ph':'High Energy Physics - Phenomenology','hep-th':'High Energy Physics-Theory','hep-lat':'High Energy Physics - Lattice', 'math-ph': 'Mathematical Physics', 'nlin':'Nonlinear Sciences', 
+'nucl-ex':'Nuclear Experiment','nucl-th':'Nuclear Theory','physics':'Physics','quant-ph':'Quantum Physics'}
 
 
 def home(request):
-     return render_to_response('home.html')
+	 return render_to_response('home.html')
 
+
+
+########################################################################################################################################################################################################
+
+# SUBARXIV VIEWS
+
+########################################################################################################################################################################################################
+
+
+# Renders the subanarxiv page and send to client
+def subanarxiv(request,area):
+	context = {"SECTION": subAreas[str(area)], "ABREV": area}
+	return render_to_response('subanarxiv.html', context)
+
+# Method to rip the papers off the RSS feeds and store in the newPaper table
+def getDailyPapers(request):
+	# Work out how to trigger this from a cron set up
+
+	# This wipes the table
+	newPaper.objects.all().delete()
+
+	for sub_section in subAreas:
+		url = "http://arxiv.org/rss/" + sub_section
+		papers = feedparser.parse(url)['entries']
+		
+		for paper in papers:
+			abstract = paper['summary'][3:-2]
+			title = paper['title']
+			arxiv_no = paper['id'].split("/")[-1]
+			
+			# Adding the paper to the temperary model
+			tempPap = newPaper(title = title, abstract = abstract, subarxiv = sub_section, arxiv_no = arxiv_no)
+			tempPap.save()	
+
+
+			# Relating the paper to the relevant authors - NEED TO SORT OUT ASCII TO UTF8 ENCODING
+			authors_unparsed = paper['author']
+			t = re.split(r'<|>',authors_unparsed)
+
+			for i in range(2,len(t),4):
+				# Surname is the last element of the array
+				secondName = t[i].split(" ")[-1]
+				# First names are the rest of the array, this includes middle name abrevs
+				firstName = " ".join(t[i].split(" ")[0:-1])
+
+				if Author.objects.filter(firstName = firstName, secondName = secondName).count() == 0:
+			
+					temp = Author(firstName = firstName, secondName = secondName)
+					temp.save()
+					# Adds the paper to the Author
+					temp.newarticles.add(tempPap)
+				
+				else:
+					temp = Author.objects.get(firstName = firstName, secondName = secondName)
+					temp.newarticles.add(tempPap)	
+
+	# allows for a test				
+	return render_to_response('home.html') 				
+
+
+# This takes the recently added papers out of the newPaper table and returns a rendered html response			
 @csrf_exempt
-def subanarxiv_new(request):
-
+def dailyPaperDisplay(request):
 	sub_section = str(request.POST['sub_anarxiv'])
-	url = "http://arxiv.org/rss/" + sub_section
-	d = feedparser.parse(url)
-	template = loader.get_template("new_result_instance.html")
+
+	papers = newPaper.objects.filter(subarxiv = sub_section)
+
+	template = loader.get_template("result_instance.html")
 	renderList =[]
 
-	for paper in d['entries']:
-		abstract = paper['summary'][3:-2]
-		title = paper['title']
+	for paper in papers:
+		AuthorList = paper.author_set.all()
+
+		for author in AuthorList:
+			allAuthors =""
+
+			allAuthors += author.firstName + " " + author.secondName + ", "
+			allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
 		
-		authors_unparsed = paper['author']
-		t = re.split(r'<|>',authors_unparsed)
-		a = ""
+			# Prints "et al" for large numbers of authors
+			if len(AuthorList) > 5:		
+				shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
+		
+			else: 
+				shortList = allAuthors	
 
-		if len(t)> 23:
-			authors = a + t[2] + " et al"
-		else:
-			for i in range(2,len(t),4):
-				a+= t[i]+ ", "
-			authors = a[:-2] + "."	
+		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : '124214'}
 
-
-		context = {'title': title, 'abstract': abstract, 'authors': authors, 'arxiv_no' : '124214'}
-
-		renderList.append(str(template.render(context).encode('utf8')))
+		renderList.append(str(template.render(context).encode('utf8')))	
 
 
 	return JsonResponse({'htmlList': renderList})
 
 
 
+########################################################################################################################################################################################################
 
-def subanarxiv(request,area):
-	subAreas = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter', 'gr-qc': 'General Relativity and Quantum Cosmology', 'hep-ex':'High Energy Physics - Experiment',
-	'hep-ph':'High Energy Physics - Phenomenology','hep-th':'High Energy Physics-Theory','hep-lat':'High Energy Physics - Lattice', 'math-ph': 'Mathematical Physics', 'nlin':'Nonlinear Sciences', 
-	'nucl-ex':'Nuclear Experiment','nucl-th':'Nuclear Theory','physics':'Physics','quant-ph':'Quantum Physics'}
-	context = {"SECTION": subAreas[str(area)], "ABREV": area}
-	return render_to_response('subanarxiv.html', context)
+# SEARCH AND DISPLAY VIEWS
 
-# Creates a dictionary that can be rendered to HTML to display the search results
+########################################################################################################################################################################################################
+
+
+# Manipulates the json returned from Inspires into a form we can display (SINGLE PAPER)
 def paperSearchDisplay(article):
 	paper = {}
 	paper['title'] = article['title']['title']
@@ -98,28 +161,28 @@ def paperSearchDisplay(article):
 
 	return paper	
 
-# Returns JSON which is rendered for the search undertaken
+# Returns rendered json to the client which can be inserted dynamically (ALL SEARCH RESULTS)
 @csrf_exempt
 def search(request):
 	surname = request.POST['info'] 
 	
 	baseurl = "https://inspirehep.net/"
 
-   	url = baseurl + "search?ln=en&ln=en&p=" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=17&sc=0"
-   	r = requests.get(url)
+	url = baseurl + "search?ln=en&ln=en&p=" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=17&sc=0"
+	r = requests.get(url)
 
-   	template = loader.get_template("result_instance.html")
+	template = loader.get_template("result_instance.html")
 
 
-   	renderList = []
+	renderList = []
 
-   	for article in r.json():
- 		paper = paperSearchDisplay(article)
+	for article in r.json():
+		paper = paperSearchDisplay(article)
 		
 		renderList.append(str(template.render(paper).encode('utf8')))
 
-   	
-   	return JsonResponse({'htmlList': renderList})
+	
+	return JsonResponse({'htmlList': renderList})
 
 
 # This function takes the paperID, performs the search and stores the paper in the Model.
@@ -166,9 +229,6 @@ def paperStore(paperID):
 			temp.articles.add(PaperObj)	
 	
 				
-
-
-
 # This creates the single paper page HTML
 def paperdisplay(request, paperID):
 	
@@ -201,6 +261,11 @@ def paperdisplay(request, paperID):
 	return render_to_response('paper.html', context)
 
 
+########################################################################################################################################################################################################
+
+# MESSAGE SUBMISSION AND RETRIEVING VIEWS
+
+########################################################################################################################################################################################################
 
 
 # The submitted message gets added to the Post model and returns the HTML rendered message
@@ -221,8 +286,6 @@ def messageSubmission(request):
 	temp = str(template.render(context).encode('utf8'))
 
 	return JsonResponse({'messageHTML': temp})
-
-
 
 # This returns a JSON of all previous messages for the paper we are looking at
 @csrf_exempt
@@ -252,3 +315,18 @@ def getMessages(request):
 
 
  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
