@@ -20,7 +20,6 @@ subAnarxivDictionary = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter
 def home(request):
      return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
 
-@csrf_exempt
 def login(request):
 	try:
 		attemptedUsername = request.POST['user']
@@ -36,7 +35,7 @@ def login(request):
 	else:
 		return JsonResponse({'loginError' : 'true'})
 
-@csrf_exempt
+
 def logout(request):
 	try:
 		result=auth_logout(request)
@@ -44,7 +43,6 @@ def logout(request):
 		return JsonResponse({})
 	return JsonResponse({"success" : "true"})
 
-@csrf_exempt
 def subanarxiv_new(request):
 
 	sub_section = str(request.POST['sub_anarxiv'])
@@ -118,7 +116,7 @@ def paperSearchDisplay(article):
 	return paper	
 
 # Returns JSON which is rendered for the search undertaken
-@csrf_exempt
+
 def search(request):
 	surname = request.POST['info'] 
 	
