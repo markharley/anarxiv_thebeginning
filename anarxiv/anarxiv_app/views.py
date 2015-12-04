@@ -18,7 +18,10 @@ subAnarxivDictionary = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter
 
 
 def home(request):
-     return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
+     return render(request,'newhome.html',{'subAnarxivs':subAnarxivDictionary})
+
+def registrationForm(request):
+	return render(request,'registration.html',{})
 
 def login(request):
 	try:
@@ -77,7 +80,7 @@ def subanarxiv_new(request):
 
 def subanarxiv(request,area):
 	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area}
-	return render_to_response('subanarxiv.html', context)
+	return render(request,'newsubanarxiv.html', context)
 
 # Creates a dictionary that can be rendered to HTML to display the search results
 def paperSearchDisplay(article):

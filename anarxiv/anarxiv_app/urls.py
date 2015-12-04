@@ -15,6 +15,8 @@ urlpatterns = [
 
 	url(r'^result/(?P<paperID>[a-zA-Z0-9._-]+)/$', views.paperdisplay, name='paperdisplay'),
 
+	url(r'^register/', views.registrationForm , name='registrationForm'),
+
 	url(r'^login/', views.login, name='login'),
 
 	url(r'^logout/', views.logout, name='logout'),
