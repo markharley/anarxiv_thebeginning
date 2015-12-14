@@ -18,6 +18,9 @@ urlpatterns = [
 
 	url(r'^subanarxiv/new/$', views.dailyPaperDisplay, name='subanarxiv_new'),
 
+	# links to specific arxiv request
+	url(r'^subanarxiv/search/$', views.specificRequest, name='specificRequest'),
+
 	url(r'^subanarxiv/arxiv:(?P<arxivno>[a-zA-Z0-9._-]+)/$', views.singlePaperView, name='singlePaperView'),
 
 	url(r'^subanarxiv/(?P<area>[a-zA-Z0-9._:-]+)/$', views.subanarxiv, name='subanarxiv'),

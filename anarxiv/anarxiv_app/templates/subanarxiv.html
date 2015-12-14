@@ -7,11 +7,15 @@
 
 {% block content %}
 	<h1> {{ SECTION  }} </h1>
+
 	<button type="button" class="btn btn-default" id = "{{ DATE.0 }}" onclick="getRecent(this.id)"> {{ DATE.0 }}</button>
 	<button type="button" class="btn btn-default" id = "{{ DATE.1 }}" onclick="getRecent(this.id)"> {{ DATE.1 }}</button>
 	<button type="button" class="btn btn-default" id = "{{ DATE.2 }}" onclick="getRecent(this.id)"> {{ DATE.2 }}</button>
 	<button type="button" class="btn btn-default" id = "{{ DATE.3 }}" onclick="getRecent(this.id)"> {{ DATE.3 }}</button>
 	<button type="button" class="btn btn-default" id = "{{ DATE.4 }}" onclick="getRecent(this.id)"> {{ DATE.4 }}</button>
+
+	<input type="text" id="searchdate">
+	<button type="button" onclick="search()" id = "searchButton">Search</button>
 
 	<div id= "test2"> <br> </div>
 	<div id="spinner" class="spinner" style="display:block;">
@@ -63,6 +67,41 @@ function getRecent(date) {
    			if(length==0){
    				$('#searchFail').css("display","block");
    			}
+
+   			for(var i =0; i < length; i++){
+   				$('#test2').append(data['htmlList'][i]);  }
+    	},
+
+    	error: function(jqXHR, textStatus, errorThrown) {
+    		if(jqXHR.status ==500){
+    			$("#spinner").css("display", "none");
+    			$('#searchFail').css("display","block");
+    		}
+		}
+     });
+};
+
+
+
+function search() {
+	$('#searchFail').css("display","none");
+	$('#test2').html("");
+
+	$("#spinner").css("display", "block");
+
+	var x = document.getElementById("searchdate").value;
+		$.ajax({
+ 		type: "POST",
+   		url: "../search/",
+   		data: {'date': x, 'sub_anarxiv': '{{ ABREV }}'},
+   		datatype: "JSON",
+
+
+   		success: function(data) {
+   			console.log("here");
+  			$("#spinner").css("display", "none");
+
+   			var length = data['htmlList'].length;
 
    			for(var i =0; i < length; i++){
    				$('#test2').append(data['htmlList'][i]);  }

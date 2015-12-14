@@ -183,39 +183,59 @@ def dailyPaperDisplay(request):
 
 	return JsonResponse({'htmlList': renderList})
 
-# def subanarxiv_new(request):
+@csrf_exempt
+def specificRequest(request):
+	date = request.POST['date']
+	area = request.POST['sub_anarxiv']
+	startDate = datetime.datetime.strptime(date, "%Y-%m-%d")
 
-# 	template = loader.get_template("new_result_instance.html")
-# 	renderList =[]
 
-# 	for paper in papers:
-# 		AuthorList = paper.author_set.all()
-# 		allAuthors =""
 
-# 		for author in AuthorList:
+	url = 'http://export.arxiv.org/oai2?verb=ListRecords&metadataPrefix=arXiv&set=' + area + '&from=' + str(startDate) + '&until=' + str(startDate)
 
-# 			allAuthors += author.firstName + " " + author.secondName + ", "
-			
-# 		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
-			
-# 		# Prints "et al" for large numbers of authors
-# 		if len(AuthorList) > 5:		
-# 			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
-# 			allAuthors = shortList	
+	urlfile = urllib2.urlopen(url)
+	data = urlfile.read()
+	urlfile.close()
+	data = xmltodict.parse(data)
+	papers = data['OAI-PMH']['ListRecords']['record']
+
+	template = loader.get_template("result_instance.html")
+	renderList = []
+
+	# Iterating over the papers 
+	for paper in papers:
+
+		article = paper['metadata']['arXiv']
+		date_added =  paper['header']['datestamp']
+
+		title = article['title']
+		abstract = article['abstract']
+		arxiv_no = article['id']
 	
-# 		else: 
-# 			shortList = allAuthors	
+		authors = article['authors']['author']
 
-				
+		if isinstance(authors,list) == False:
+			newAuthors = []
+			newAuthors.append(authors)
+		else:
+			newAuthors = authors	
 
-# 		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : paper.arxiv_no, 'subanarxiv':subanarxiv}
+		AuthorList = ""	
 
-# 		renderList.append(str(template.render(context).encode('utf8')))	
+		for author in newAuthors:
+			if 'forenames' in author:
+				firstName = author['forenames']
+				AuthorList += firstName + " "
+			
+			secondName = author['keyname']
+			AuthorList += secondName + ", "
 
+		context = {'title': title, 'arxiv_no': arxiv_no}	
 
-# 	return JsonResponse({'htmlList': renderList})
+		renderList.append(str(template.render(context).encode('utf8')))		
 
-
+	return JsonResponse({'htmlList': renderList})		
+		
 
 def singlePaperView(request, arxivno):
 	paper = newPaper.objects.get(arxiv_no = arxivno)
