@@ -4,13 +4,16 @@ from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-from datetime import datetime
-import requests, json, feedparser, re
+import datetime 
+import requests, json, feedparser, re, urllib2, xmltodict
 
 
-subAreas = {'astro-ph':'Astrophysics', 'cond-mat': 'Condensed Matter', 'gr-qc': 'General Relativity and Quantum Cosmology', 'hep-ex':'High Energy Physics - Experiment',
-'hep-ph':'High Energy Physics - Phenomenology','hep-th':'High Energy Physics-Theory','hep-lat':'High Energy Physics - Lattice', 'math-ph': 'Mathematical Physics', 'nlin':'Nonlinear Sciences', 
-'nucl-ex':'Nuclear Experiment','nucl-th':'Nuclear Theory','physics':'Physics','quant-ph':'Quantum Physics'}
+subAreas = {'physics:astro-ph':'Astrophysics', 'physics:cond-mat': 'Condensed Matter', 'physics:gr-qc': 'General Relativity and Quantum Cosmology', 'physics:hep-ex':'High Energy Physics - Experiment',
+'physics:hep-ph':'High Energy Physics - Phenomenology','physics:hep-th':'High Energy Physics-Theory','physics:hep-lat':'High Energy Physics - Lattice', 'physics:math-ph': 'Mathematical Physics', 'physics:nlin':'Nonlinear Sciences', 
+'physics:nucl-ex':'Nuclear Experiment','physics:nucl-th':'Nuclear Theory','physics:physics':'Physics','physics:quant-ph':'Quantum Physics',
+'math':'Maths', 'cs':'Computer Science', 'stat':'Statistics', 'q-bio':'Quantative Biology', 'q-fin':'Quantative Finance'}
+
+
 
 
 def home(request):
@@ -27,66 +30,96 @@ def home(request):
 
 # Renders the subanarxiv page and send to client
 def subanarxiv(request,area):
-	context = {"SECTION": subAreas[str(area)], "ABREV": area}
+	context = {"SECTION": subAreas['physics:'+str(area)], "ABREV": area}
 	return render_to_response('subanarxiv.html', context)
 
-# Method to rip the papers off the RSS feeds and store in the newPaper table, called by "python manage.py getNewPapers"
+
+
 def getDailyPapers():
 
-	# This wipes the table
-	newPaper.objects.all().delete()
-	subArxiv.objects.all().delete()
 
-	for sub_section in subAreas:
-		subarx = subArxiv(region = sub_section)
-		subarx.save()
+	# requesting and accessing paper data
+	date = str(datetime.date.today())
 
-		url = "http://arxiv.org/rss/" + sub_section
-		papers = feedparser.parse(url)['entries']
+	url = 'http://export.arxiv.org/oai2?verb=ListRecords&metadataPrefix=arXiv&from=' + date
+
+	urlfile = urllib2.urlopen(url)
+	data = urlfile.read()
+	urlfile.close()
+	data = xmltodict.parse(data)
+	papers = data['OAI-PMH']['ListRecords']['record']
+
+	# Iterating over the papers 
+	for paper in papers:
+
+		# This creates the subarxiv areas
+		sub = paper['header']['setSpec']
+		if isinstance(sub,list) == False:
+			subareas = []
+			subareas.append(sub)
+		else:
+			subareas = sub	
+
+		for subarea in subareas:
+			if subArxiv.objects.filter(region = subarea).count() == 0:
+				subarx = subArxiv(region = subarea)
+				subarx.save()
+
+
+		article = paper['metadata']['arXiv']
+
+		title = article['title']
+		abstract = article['abstract']
+		arxiv_no = article['id']
+
+		# Adding the paper to the temperary model only adds the paper if is not already in the database
+		if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 0:
+			tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no, added_at = date)
+			tempPap.save()	
+			# Attaches the subarxivs to the paper
+			for subarea in subareas:
+				temp = subArxiv.objects.get(region = subarea)
+				tempPap.area.add(temp)
+
+		else:
+			tempPap = newPaper.objects.get(arxiv_no = arxiv_no)
+			for subarea in subareas:
+				temp = subArxiv.objects.get(region = subarea)
+				tempPap.area.add(temp)
+
+
+		# Attaches the authors to the paper		
+		authors = article['authors']['author']
+
+		if isinstance(authors,list) == False:
+			newAuthors = []
+			newAuthors.append(authors)
+		else:
+			newAuthors = authors	
+
+
+		for author in newAuthors:
+			if 'forenames' in author:
+				firstName = author['forenames']
+			
+			secondName = author['keyname']
+
+			if Author.objects.filter(firstName = firstName, secondName = secondName).count() == 0:
 		
-		for paper in papers:
-			abstract = paper['summary'][3:-2]
-			title = paper['title']
-			arxiv_no = paper['id'].split("/")[-1]
+				temp = Author(firstName = firstName, secondName = secondName)
+				temp.save()
+				# Adds the paper to the Author
+				temp.newarticles.add(tempPap)
 			
-			# Adding the paper to the temperary model only adds the paper if is not already in the database
-			if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 0:
-				tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no)
-				tempPap.save()	
-				tempPap.area.add(subarx)
-
 			else:
-				temp = newPaper.objects.get(arxiv_no = arxiv_no)
-				temp.area.add(subarx)
-
-			# Relating the paper to the relevant authors - NEED TO SORT OUT ASCII TO UTF8 ENCODING
-			authors_unparsed = paper['author']
-			t = re.split(r'<|>',authors_unparsed)
-
-			for i in range(2,len(t),4):
-				# Surname is the last element of the array
-				secondName = t[i].split(" ")[-1]
-				# First names are the rest of the array, this includes middle name abrevs
-				firstName = " ".join(t[i].split(" ")[0:-1])
-
-				if Author.objects.filter(firstName = firstName, secondName = secondName).count() == 0:
-			
-					temp = Author(firstName = firstName, secondName = secondName)
-					temp.save()
-					# Adds the paper to the Author
-					temp.newarticles.add(tempPap)
-				
-				else:
-					temp = Author.objects.get(firstName = firstName, secondName = secondName)
-					temp.newarticles.add(tempPap)	
-
-	# allows for a test				
-	return render_to_response('home.html') 				
+				temp = Author.objects.get(firstName = firstName, secondName = secondName)
+				temp.newarticles.add(tempPap)	
+		
 
 # This takes the recently added papers out of the newPaper table and returns a rendered html response			
 @csrf_exempt
 def dailyPaperDisplay(request):
-	sub_section = str(request.POST['sub_anarxiv'])
+	sub_section = 'physics:' + str(request.POST['sub_anarxiv'])
 	area = subArxiv.objects.get(region = sub_section)
 
 	papers = area.newpaper_set.all()
