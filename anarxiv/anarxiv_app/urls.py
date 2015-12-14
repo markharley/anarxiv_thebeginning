@@ -20,8 +20,14 @@ urlpatterns = [
 
 	url(r'^subanarxiv/arxiv:(?P<arxivno>[a-zA-Z0-9._-]+)/$', views.singlePaperView, name='singlePaperView'),
 
-	url(r'^subanarxiv/(?P<area>[a-zA-Z0-9._-]+)/$', views.subanarxiv, name='subanarxiv'),
+	url(r'^subanarxiv/(?P<area>[a-zA-Z0-9._:-]+)/$', views.subanarxiv, name='subanarxiv'),
 
+
+	url(r'^register/', views.registrationForm , name='registrationForm'),
+
+	url(r'^login/', views.login, name='login'),
+
+	url(r'^logout/', views.logout, name='logout'),
 
     url(r'^$', views.home, name='home'),
 ]

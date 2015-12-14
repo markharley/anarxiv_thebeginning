@@ -1,77 +1,37 @@
-<hmtl>
+{% extends "base.html" %}
 {% load staticfiles %}
 
-<head>
-	<title>
-		This is the homepage
-	</title>
-	
-	<link rel="stylesheet" href="{% static 'css/home.css' %}">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-	<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
-</head>
+{% block title %} 
+	Anarxiv
+{% endblock %}
 
-<body>
+{% block content %}
+	<h1> {{ SECTION  }} </h1>
+	<div id= "test2"> <br> </div>
+	<div id="spinner" class="spinner" style="display:block;">
+		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
+	</div>
+{% endblock %}
 
-	<div id = "wrapper">
+{% block script %}
 
-		<div id = "header">
-			<h1> Welcome to the <a id = "homelink" href = "/home/">ANARXIV </a>: The place where you can call academics out.</h1>
-		</div>
+	$(document).ready(
 
-		<div id = "content">
-		
-		<h1> {{ SECTION  }} </h1>
-		
+		$.ajax({
+	         	type: "POST",
+	           	url: "../new/",
+	           	data: {'sub_anarxiv': '{{ ABREV }}'},
+	           	datatype: "JSON",
 
-		<div id= "test2"> <br> </div>
-		<div id="spinner" class="spinner" style="display:block;">
-    		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
-		</div>
+	           	success: function(data){	
+	           		$("#spinner").css("display", "none");
+	           		var length = data['htmlList'].length;
+	           		for(var i = 0; i< length; i++){
+	           			$('#test2').append(data['htmlList'][i]); } 
+	           		
+		        	}
+	       }
+	           	
+	));
 
-			</div>
-
-			<div id = "footer">
-				This is in no way associated with the arxiv.....
-			</div>
-
-		</div>
-
-
-		<script type="text/javascript">
-
-
-		$(document).ready(
-
-			$.ajax({
-		         	type: "POST",
-		           	url: "../new/",
-		           	data: {'sub_anarxiv': '{{ ABREV }}'},
-		           	datatype: "JSON",
-
-		           	success: function(data){	
-		           		$("#spinner").css("display", "none");
-		           		var length = data['htmlList'].length;
-		           		for(var i = 0; i< length; i++){
-		           			$('#test2').append(data['htmlList'][i]); } 
-		           		
-			        	}
-		       }
-		           	
-		           ));
-
-	
-
-
-
-
-		</script>
-
-
-
-
-
-</body>
-
-</html>
+{% endblock %}

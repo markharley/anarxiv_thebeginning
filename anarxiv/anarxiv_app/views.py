@@ -4,22 +4,44 @@ from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-import datetime 
-import requests, json, feedparser, re, urllib2, xmltodict
+import requests, json, feedparser, re, urllib2, xmltodict, datetime
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
 
-subAreas = {'physics:astro-ph':'Astrophysics', 'physics:cond-mat': 'Condensed Matter', 'physics:gr-qc': 'General Relativity and Quantum Cosmology', 'physics:hep-ex':'High Energy Physics - Experiment',
+subAnarxivDictionary = {'physics:astro-ph':'Astrophysics', 'physics:cond-mat': 'Condensed Matter', 'physics:gr-qc': 'General Relativity and Quantum Cosmology', 'physics:hep-ex':'High Energy Physics - Experiment',
 'physics:hep-ph':'High Energy Physics - Phenomenology','physics:hep-th':'High Energy Physics-Theory','physics:hep-lat':'High Energy Physics - Lattice', 'physics:math-ph': 'Mathematical Physics', 'physics:nlin':'Nonlinear Sciences', 
 'physics:nucl-ex':'Nuclear Experiment','physics:nucl-th':'Nuclear Theory','physics:physics':'Physics','physics:quant-ph':'Quantum Physics',
 'math':'Maths', 'cs':'Computer Science', 'stat':'Statistics', 'q-bio':'Quantative Biology', 'q-fin':'Quantative Finance'}
 
 
-
-
 def home(request):
-	 return render_to_response('home.html')
+     return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
+
+def registrationForm(request):
+	return render(request,'registration.html',{})
+
+def login(request):
+	try:
+		attemptedUsername = request.POST['user']
+		attemptedPassword = request.POST['password']
+	except:
+		return JsonResponse({'loginError' : 'true'})
+
+	user = authenticate(username=attemptedUsername, password=attemptedPassword)
+
+	if user is not None:
+		auth_login(request,user)
+		return JsonResponse({'username' : user.username})
+	else:
+		return JsonResponse({'loginError' : 'true'})
 
 
+def logout(request):
+	try:
+		result=auth_logout(request)
+	except:
+		return JsonResponse({})
+	return JsonResponse({"success" : "true"})
 
 ########################################################################################################################################################################################################
 
@@ -30,11 +52,10 @@ def home(request):
 
 # Renders the subanarxiv page and send to client
 def subanarxiv(request,area):
-	context = {"SECTION": subAreas['physics:'+str(area)], "ABREV": area}
-	return render_to_response('subanarxiv.html', context)
+	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area}
+	return render(request,'subanarxiv.html', context)
 
-
-
+# Method to download daily papers
 def getDailyPapers():
 
 
@@ -119,7 +140,7 @@ def getDailyPapers():
 # This takes the recently added papers out of the newPaper table and returns a rendered html response			
 @csrf_exempt
 def dailyPaperDisplay(request):
-	sub_section = 'physics:' + str(request.POST['sub_anarxiv'])
+	sub_section = str(request.POST['sub_anarxiv'])
 	area = subArxiv.objects.get(region = sub_section)
 
 	papers = area.newpaper_set.all()
@@ -153,6 +174,39 @@ def dailyPaperDisplay(request):
 
 
 	return JsonResponse({'htmlList': renderList})
+
+def subanarxiv_new(request):
+
+	template = loader.get_template("new_result_instance.html")
+	renderList =[]
+
+	for paper in papers:
+		AuthorList = paper.author_set.all()
+		allAuthors =""
+
+		for author in AuthorList:
+
+			allAuthors += author.firstName + " " + author.secondName + ", "
+			
+		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
+			
+		# Prints "et al" for large numbers of authors
+		if len(AuthorList) > 5:		
+			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
+			allAuthors = shortList	
+	
+		else: 
+			shortList = allAuthors	
+
+				
+
+		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : paper.arxiv_no, 'subanarxiv':subanarxiv}
+
+		renderList.append(str(template.render(context).encode('utf8')))	
+
+
+	return JsonResponse({'htmlList': renderList})
+
 
 
 def singlePaperView(request, arxivno):
@@ -228,7 +282,9 @@ def paperSearchDisplay(article):
 
 	return paper	
 
-# Returns rendered json to the client which can be inserted dynamically (ALL SEARCH RESULTS)
+
+
+# Returns JSON which is rendered for the search undertaken
 @csrf_exempt
 def search(request):
 	surname = request.POST['info'] 

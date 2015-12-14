@@ -1,122 +1,63 @@
-<hmtl>
+{% extends "base.html" %}
 {% load staticfiles %}
 
-<head>
-	<title>
-		This is the homepage
-	</title>
-
-	<!-- BOOTSTRAP IMPORTS -->
-	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<!-- jQuery library -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-	<!-- Latest compiled JavaScript -->
-	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<!-- Makes the divice cross platform compatible	 -->
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+{% block title %} 
+	Anarxiv
+{% endblock %}
 
 
-	<!-- OUR OWN CONSTRUCTIONS -->
-	<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% block content %}
+<div id = "content">
+	<h2> Physics </h2>
+		<ul>
+			{% for location, name in subAnarxivs.items %}
+				<li> <a href="subanarxiv/{{location}}">{{name}}</a>  </li>
+			{% endfor %}
+		</ul>
+
+	<input type="text" id="surname" value="bartrum">
+	<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
+
+	<div id= "test"> <br> </div>
+
+	<div id="spinner" class="spinner" style="display:none;">
+			<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
+	</div>
+
+	<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
 	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-</head>
+</div>
+{% endblock %}
 
-<body>
+{% block script %}
+function searchButtonClicked() {
+	$('#searchFail').css("display","none");
+	$('#test').html("");
 
+	$("#spinner").css("display", "block");
 
-	<div id = "wrapper">
+	var x = document.getElementById("surname").value;
+		$.ajax({
+ 		type: "POST",
+   		url: "../home/search/",
+   		data: {'info': x},
+   		datatype: "JSON",
 
-		<div id = "header">
-			<h1> Welcome to the <a id = "homelink" href = "/home/">ANARXIV </a>: The place where you can call academics out.</h1>
-		</div>
+   		success: function(data) {
+  			$("#spinner").css("display", "none");
 
-		<div id = "content">
-			<h2> Physics </h2>
+   			var length = data['htmlList'].length;
 
-				<ul>
-			 	 	<li><a href="/home/subanarxiv/astro-ph">Astrophysics</a></li> 
-					<li><a href="/home/subanarxiv/cond-mat">Condensed Matter</a></li> 
-					<li><a href="/home/subanarxiv/gr-qc">General Relativity and Quantum Cosmology (gr-qc new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/hep-ex">High Energy Physics - Experiment (hep-ex new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/hep-lat">High Energy Physics - Lattice (hep-lat new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/hep-ph">High Energy Physics - Phenomenology (hep-ph new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/hep-th">High Energy Physics - Theory (hep-th new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/math-ph">Mathematical Physics (math-ph new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/nlin">Nonlinear Sciences (nlin new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/nucl-ex">Nuclear Experiment (nucl-ex new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/nucl-th">Nuclear Theory (nucl-th new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/physics">Physics (physics new, recent, find)</a></li> 
-					<li><a href="/home/subanarxiv/quant-ph">Quantum Physics (quant-ph new, recent, find)</a></li> 
-				</ul>
+   			for(var i =0; i < length; i++){
+   				$('#test').append(data['htmlList'][i]);  }
+    	},
 
-
-			<input type="text" id="searchField" value="bartrum"> 
-			<button type="button" onclick="searchButtonClicked()" id = "searchButton" class="btn btn-primary btn-sm">Search</button>
-
-			<div id= "test"> <br> </div>
-				
-			<div id="spinner" class="spinner" style="display:none;">
-    		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
-			</div>
-
-			<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
-			<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-
-
-			 <script type = "text/javascript">
-
-
-				function searchButtonClicked() {
-					$('#searchFail').css("display","none");
-					$('#test').html("");
-
-					$("#spinner").css("display", "block"); 
-
-					var x = document.getElementById("searchField").value;
-		 			$.ajax({
-		         		type: "POST",
-		           		url: "../home/search/",
-		           		data: {'info': x},
-		           		datatype: "JSON",
-
-		           		success: function(data) {
-		          			$("#spinner").css("display", "none");
-
-		           			var length = data['htmlList'].length;
-		           		
-		           			for(var i =0; i < length; i++){
-		           				$('#test').append(data['htmlList'][i]);  }
-			        	},
-
-			        	error: function(jqXHR, textStatus, errorThrown) {
-			        		if(jqXHR.status ==500){
-			        			$("#spinner").css("display", "none");
-			        			$('#searchFail').css("display","block");
-			        		}
-						}
-			         	
-			         	});
-
-					};
-
-
-			</script>
-
-
-
-			</div>
-
-			<div id = "footer">
-				This is in no way associated with the arxiv.....
-			</div>
-
-
-		</div>
-
-
-
-
-</body>
-
-</html>
+    	error: function(jqXHR, textStatus, errorThrown) {
+    		if(jqXHR.status ==500){
+    			$("#spinner").css("display", "none");
+    			$('#searchFail').css("display","block");
+    		}
+		}
+     });
+};
+{% endblock %}
