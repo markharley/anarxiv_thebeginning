@@ -100,7 +100,7 @@ class newPaper(models.Model):
 	# Tracks the date the paper was added to the arxiv
 	# added_at = models.DateTimeField(auto_now_add=True)
 
-	added_at = models.DateTimeField(null = True)
+	added_at = models.CharField(max_length=50, null = True)
 
 
 	area = models.ManyToManyField(subArxiv)

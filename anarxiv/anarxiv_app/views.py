@@ -52,17 +52,22 @@ def logout(request):
 
 # Renders the subanarxiv page and send to client
 def subanarxiv(request,area):
-	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area}
+	thisDay = datetime.date.today()
+	one_day = datetime.timedelta(days=1)
+	FiveDays = [str(thisDay - x*one_day) for x in range(5)]
+	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, "DATE": FiveDays}
 	return render(request,'subanarxiv.html', context)
 
-# Method to download daily papers
+# Gets last five days papers from the arxiv runs from command line "python manage.py getNewPapers"
 def getDailyPapers():
-
+	NoDays = 5
+	thisDay = datetime.date.today()
+	oneDay = datetime.timedelta(days=1)
+	date = thisDay - oneDay*NoDays
 
 	# requesting and accessing paper data
-	date = str(datetime.date.today())
 
-	url = 'http://export.arxiv.org/oai2?verb=ListRecords&metadataPrefix=arXiv&from=' + date
+	url = 'http://export.arxiv.org/oai2?verb=ListRecords&metadataPrefix=arXiv&from=' + str(date)
 
 	urlfile = urllib2.urlopen(url)
 	data = urlfile.read()
@@ -88,14 +93,16 @@ def getDailyPapers():
 
 
 		article = paper['metadata']['arXiv']
+		date_added =  paper['header']['datestamp']
 
 		title = article['title']
 		abstract = article['abstract']
 		arxiv_no = article['id']
 
+
 		# Adding the paper to the temperary model only adds the paper if is not already in the database
 		if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 0:
-			tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no, added_at = date)
+			tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no, added_at = date_added)
 			tempPap.save()	
 			# Attaches the subarxivs to the paper
 			for subarea in subareas:
@@ -141,9 +148,10 @@ def getDailyPapers():
 @csrf_exempt
 def dailyPaperDisplay(request):
 	sub_section = str(request.POST['sub_anarxiv'])
+	date = request.POST['date']
 	area = subArxiv.objects.get(region = sub_section)
 
-	papers = area.newpaper_set.all()
+	papers = area.newpaper_set.all().filter(added_at = date)
 
 	template = loader.get_template("new_result_instance.html")
 	renderList =[]
@@ -175,37 +183,37 @@ def dailyPaperDisplay(request):
 
 	return JsonResponse({'htmlList': renderList})
 
-def subanarxiv_new(request):
+# def subanarxiv_new(request):
 
-	template = loader.get_template("new_result_instance.html")
-	renderList =[]
+# 	template = loader.get_template("new_result_instance.html")
+# 	renderList =[]
 
-	for paper in papers:
-		AuthorList = paper.author_set.all()
-		allAuthors =""
+# 	for paper in papers:
+# 		AuthorList = paper.author_set.all()
+# 		allAuthors =""
 
-		for author in AuthorList:
+# 		for author in AuthorList:
 
-			allAuthors += author.firstName + " " + author.secondName + ", "
+# 			allAuthors += author.firstName + " " + author.secondName + ", "
 			
-		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
+# 		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
 			
-		# Prints "et al" for large numbers of authors
-		if len(AuthorList) > 5:		
-			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
-			allAuthors = shortList	
+# 		# Prints "et al" for large numbers of authors
+# 		if len(AuthorList) > 5:		
+# 			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
+# 			allAuthors = shortList	
 	
-		else: 
-			shortList = allAuthors	
+# 		else: 
+# 			shortList = allAuthors	
 
 				
 
-		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : paper.arxiv_no, 'subanarxiv':subanarxiv}
+# 		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : paper.arxiv_no, 'subanarxiv':subanarxiv}
 
-		renderList.append(str(template.render(context).encode('utf8')))	
+# 		renderList.append(str(template.render(context).encode('utf8')))	
 
 
-	return JsonResponse({'htmlList': renderList})
+# 	return JsonResponse({'htmlList': renderList})
 
 
 
