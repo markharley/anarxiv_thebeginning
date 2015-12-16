@@ -49,13 +49,16 @@
 
 		$(document).ready(
 
+
 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagerequest/",
-		           	data: {'id': {{ paperID }} },
+		           	data: {'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }}},
 		           	datatype: "JSON",
 
 		           	success: function(data){	
+		           	console.log("hi");
+
 
 		           		var length = data['messageHTML'].length;
 		           		
@@ -79,10 +82,12 @@
 		 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagesubmission/",
-		           	data: {'message':message, 'id': {{ paperID }} },
+		           	data: {'message':message, 'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }}},
 		           	datatype: "JSON",
 
+
 		           	success: function(data) {
+		           		console.log("hi");
 		          
 	           			$('#messageApend').append(data['messageHTML']);
 

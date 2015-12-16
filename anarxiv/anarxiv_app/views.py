@@ -382,7 +382,7 @@ def paperdisplay(request, paperID):
 	else: 
 		shortList = allAuthors	
 
-	context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal}
+	context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
 
 	return render_to_response('paper.html', context)
 
@@ -399,11 +399,16 @@ def paperdisplay(request, paperID):
 def messageSubmission(request):
 	message = request.POST['message']     
 	message_id = request.POST['id']
+	arxiv_no = request.POST['arxivno']
 
-	paper = Paper.objects.get(Inspires_no = message_id)
-
-	# Create post object
-	post = Post(message = message, paper = paper)
+	if message_id == '0':
+		paper = newPaper.objects.get(arxiv_no = arxiv_no)
+		post = Post(message = message, new_paper = paper)
+	
+	else:
+		paper = Paper.objects.get(Inspires_no = message_id)
+		post = Post(message = message, paper = paper)
+	
 	post.save()
 
 	context = {'message': post.message, 'time': post.date}
@@ -413,14 +418,22 @@ def messageSubmission(request):
 
 	return JsonResponse({'messageHTML': temp})
 
+
 # This returns a JSON of all previous messages for the paper we are looking at
 @csrf_exempt
 def getMessages(request):
 	message_id = request.POST['id']
+	arxiv_no = request.POST['arxivno']
 
-	paper = Paper.objects.get(Inspires_no = message_id)
+	# If the paper has an inspires id look for the paper in the permanent database
+	if message_id == '0':
+		article = newPaper.objects.get(arxiv_no = arxiv_no)
+	
+	else:
+		article = Paper.objects.get(Inspires_no = message_id)
 
-	posts = paper.post_set.all()
+	posts = article.post_set.all()
+
 
 	template = loader.get_template("message.html")
 	renderList = []

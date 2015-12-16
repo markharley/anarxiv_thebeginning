@@ -138,7 +138,8 @@ class Post(models.Model):
 	# ...to get all posts for a paper or...
 	#      paper.post_set.filter(isAcademic=True)
 	# ...to get only the posts from acadmic users
-	paper = models.ForeignKey(Paper)
+	paper = models.ForeignKey(Paper, null = True)
+	new_paper = models.ForeignKey(newPaper, null = True)
 
 	# Can each post be up-voted/down-voted?
 	upVotes = models.IntegerField(default=0)
