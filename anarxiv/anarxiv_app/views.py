@@ -35,7 +35,6 @@ def login(request):
 	else:
 		return JsonResponse({'loginError' : 'true'})
 
-
 def logout(request):
 	try:
 		result=auth_logout(request)
@@ -143,7 +142,6 @@ def getDailyPapers():
 				temp = Author.objects.get(firstName = firstName, secondName = secondName)
 				temp.newarticles.add(tempPap)	
 		
-
 # This takes the recently added papers out of the newPaper table and returns a rendered html response			
 @csrf_exempt
 def dailyPaperDisplay(request):
@@ -183,6 +181,7 @@ def dailyPaperDisplay(request):
 
 	return JsonResponse({'htmlList': renderList})
 
+# This is a specific search function for the arxiv takes a specific date and area as the input
 @csrf_exempt
 def specificRequest(request):
 	date = request.POST['date']
@@ -237,34 +236,6 @@ def specificRequest(request):
 	return JsonResponse({'htmlList': renderList})		
 		
 
-def singlePaperView(request, arxivno):
-	paper = newPaper.objects.get(arxiv_no = arxivno)
-
-	# Returns set of authors related to this paper
-	AuthorList = paper.author_set.all()
-
-	allAuthors =""
-
-	for author in AuthorList:
-		allAuthors += author.firstName + " " + author.secondName + ", "
-	allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
-	
-	# Prints "et al" for large numbers of authors
-	if len(AuthorList) > 5:		
-		shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
-	
-	else: 
-		shortList = allAuthors	
-
-	if paper.journal == None:
-		journalref = ""
-	else:
-		journalref = paper.journal	 	
-
-	context = {'title': paper.title, 'authors':allAuthors, 'shortList': shortList, 'abstract': paper.abstract, 'journal_ref':journalref}
-	return render_to_response('paper.html', context)
-
-
 ########################################################################################################################################################################################################
 
 # SEARCH AND DISPLAY VIEWS
@@ -315,8 +286,6 @@ def paperSearchDisplay(article):
 
 	return paper	
 
-
-
 # Returns JSON which is rendered for the search undertaken
 @csrf_exempt
 def search(request):
@@ -339,7 +308,6 @@ def search(request):
 
 	
 	return JsonResponse({'htmlList': renderList})
-
 
 # This function takes the paperID, performs the search and stores the paper in the Model.
 def paperStore(paperID):
@@ -383,18 +351,20 @@ def paperStore(paperID):
 		else:
 			temp = Author.objects.get(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name'])
 			temp.articles.add(PaperObj)	
-	
 				
-# This creates the single paper page HTML
+# This creates the single paper page for both arxiv and inspires papers
 def paperdisplay(request, paperID):
-	
-	# We store the paper in the Model if it is not already in the model
-	num = Paper.objects.filter(Inspires_no = paperID).count()
-	
-	if num == 0:
-		paperStore(paperID)
 
-	paperChoice = Paper.objects.get(Inspires_no = paperID)
+	if paperID[0:6]=="arxiv:":
+		paperChoice = newPaper.objects.get(arxiv_no = paperID[6:])
+	else:
+		# We store the paper in the Model if it is not already in the model
+		num = Paper.objects.filter(Inspires_no = paperID).count()
+	
+		if num == 0:
+			paperStore(paperID)
+
+		paperChoice = Paper.objects.get(Inspires_no = paperID)
 
 	# Returns set of authors related to this paper
 	AuthorList = paperChoice.author_set.all()
