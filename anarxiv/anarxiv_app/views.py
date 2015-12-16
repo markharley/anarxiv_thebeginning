@@ -15,7 +15,7 @@ subAnarxivDictionary = {'physics:astro-ph':'Astrophysics', 'physics:cond-mat': '
 
 
 def home(request):
-     return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
+	 return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
 
 def registrationForm(request):
 	return render(request,'registration.html',{})
@@ -141,6 +141,37 @@ def getDailyPapers():
 			else:
 				temp = Author.objects.get(firstName = firstName, secondName = secondName)
 				temp.newarticles.add(tempPap)	
+
+def updatePapers():
+	papers = newPaper.objects.all()
+	for article in papers:
+		posts = article.post_set.all()
+		#Delete the paper if it has no posts
+		if len(posts) == 0:
+			article.delete()
+		else:
+			url = "https://inspirehep.net/search?of=recjson&ln=en&ln=en&p=find+eprint+arxiv:"+ str(article.arxiv_no) + "&of=hb&action_search=Search&sf=earliestdate&so=d&rm=&rg=25&sc=0"
+			try:
+				data = requests.get(url).json()
+				inspires_no = data[0]['recid']
+				paperStore(inspires_no)
+				
+				# Move the messages over
+				y = Paper.objects.get(Inspires_no = inspires_no)
+				posts = article.post_set.all()
+				for post in posts:
+					temp = post.message
+					temp2 = Post(message = temp, paper = y)
+					temp2.save()
+
+				# Delete the paper	
+				article.delete()	
+
+			except ValueError:
+				pass	
+
+
+
 		
 # This takes the recently added papers out of the newPaper table and returns a rendered html response			
 @csrf_exempt
@@ -286,7 +317,7 @@ def paperSearchDisplay(article):
 
 	return paper	
 
-# Returns JSON which is rendered for the search undertaken
+# Inspires search
 @csrf_exempt
 def search(request):
 	surname = request.POST['info'] 
@@ -296,6 +327,7 @@ def search(request):
 	url = baseurl + "search?ln=en&ln=en&p=" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=17&sc=0"
 	r = requests.get(url)
 
+	# "https://inspirehep.net/search?ln=en&ln=en&p=bartrum&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=17&sc=0
 	template = loader.get_template("result_instance.html")
 
 
@@ -312,7 +344,7 @@ def search(request):
 # This function takes the paperID, performs the search and stores the paper in the Model.
 def paperStore(paperID):
 	
-	url = "https://inspirehep.net/record/"+paperID+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info"
+	url = "https://inspirehep.net/record/"+str(paperID)+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info"
 	r = requests.get(url).json()[0]
 	title = r['title']['title']	
 	Inspires_no = r['recid']
@@ -329,6 +361,7 @@ def paperStore(paperID):
 	# Create the journal ref
 	info = r['publication_info']	
 	journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
+	
 
 	# Save the paper to the database
 	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no, journal = journal_ref)
@@ -401,10 +434,11 @@ def messageSubmission(request):
 	message_id = request.POST['id']
 	arxiv_no = request.POST['arxivno']
 
+	# If the paper does not have an inspires id, then it is in the temperary db
 	if message_id == '0':
 		paper = newPaper.objects.get(arxiv_no = arxiv_no)
 		post = Post(message = message, new_paper = paper)
-	
+	# Otherwise we look for it in the permanent db
 	else:
 		paper = Paper.objects.get(Inspires_no = message_id)
 		post = Post(message = message, paper = paper)
@@ -425,10 +459,10 @@ def getMessages(request):
 	message_id = request.POST['id']
 	arxiv_no = request.POST['arxivno']
 
-	# If the paper has an inspires id look for the paper in the permanent database
+	# If the paper does not have an inspires id, then it is in the temperary db
 	if message_id == '0':
 		article = newPaper.objects.get(arxiv_no = arxiv_no)
-	
+	# Otherwise we look for it in the permanent db
 	else:
 		article = Paper.objects.get(Inspires_no = message_id)
 
