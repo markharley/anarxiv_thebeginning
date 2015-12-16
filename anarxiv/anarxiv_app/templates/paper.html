@@ -1,28 +1,10 @@
-<hmtl>
+{% extends "base.html" %}
 {% load staticfiles %}
 
-<head>
-	<title>
-		This is the homepage
-	</title>
-	
-	<link rel="stylesheet" href="{% static 'css/home.css' %}">
-	<link rel="stylesheet" href="{% static 'css/paper.css' %}">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-</head>
 
-<body>
+{% block content %}
 
-
-	<div id = "wrapper">
-
-		<div id = "header">
-			<h1> Welcome to the <a id = "homelink" href = "/home/">ANARXIV </a>: The place where you can call academics out.</h1>
-		</div>
-
-		<div id = "content">
-
+	<div id = "content">
 		<h2> {{ title }} </h2>
 		
 		<div id = "Authors">
@@ -39,10 +21,12 @@
 		<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
 
 		<div id = "messageApend"> </div>
+	</div>	
+{% endblock %}
 
 
+{% block script %}
 
-		<script type="text/javascript">
 			var x = 2;
 			$("#Authors").click( function(){
 		
@@ -60,12 +44,8 @@
     			});
 
 
-		</script>
 
 
-
-
-		<script type="text/javascript">
 
 		$(document).ready(
 
@@ -90,13 +70,7 @@
 			);
 
 
-		</script>
 
-
-
-
-
-		 <script type = "text/javascript">
 
 				function messageSubmitted() {
 
@@ -118,23 +92,5 @@
 
 					};
 
-			</script>
 
-
-
-
-			</div>
-
-			<div id = "footer">
-				This is in no way associated with the arxiv.....
-			</div>
-
-
-		</div>
-
-
-
-
-</body>
-
-</html>
+{% endblock %}

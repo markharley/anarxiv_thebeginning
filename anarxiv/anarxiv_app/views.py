@@ -256,7 +256,12 @@ def singlePaperView(request, arxivno):
 	else: 
 		shortList = allAuthors	
 
-	context = {'title': paper.title, 'authors':allAuthors, 'shortList': shortList, 'abstract': paper.abstract, 'journal_ref':paper.journal}
+	if paper.journal == None:
+		journalref = ""
+	else:
+		journalref = paper.journal	 	
+
+	context = {'title': paper.title, 'authors':allAuthors, 'shortList': shortList, 'abstract': paper.abstract, 'journal_ref':journalref}
 	return render_to_response('paper.html', context)
 
 
