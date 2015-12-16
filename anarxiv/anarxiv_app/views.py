@@ -151,7 +151,7 @@ def dailyPaperDisplay(request):
 
 	papers = area.newpaper_set.all().filter(added_at = date)
 
-	template = loader.get_template("new_result_instance.html")
+	template = loader.get_template("result_instance.html")
 	renderList =[]
 
 	for paper in papers:
@@ -174,7 +174,7 @@ def dailyPaperDisplay(request):
 
 				
 
-		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'arxiv_no' : paper.arxiv_no, 'subanarxiv':subanarxiv}
+		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'recid' : 'arxiv:'+ paper.arxiv_no, 'subanarxiv':subanarxiv, 'arxiv_no': paper.arxiv_no}
 
 		renderList.append(str(template.render(context).encode('utf8')))	
 
