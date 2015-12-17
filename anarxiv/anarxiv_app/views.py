@@ -143,6 +143,7 @@ def getDailyPapers():
 				temp.newarticles.add(tempPap)	
 
 def updatePapers():
+
 	papers = newPaper.objects.all()
 	for article in papers:
 		posts = article.post_set.all()
