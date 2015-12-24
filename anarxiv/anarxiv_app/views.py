@@ -143,11 +143,16 @@ def getDailyPapers():
 				temp.newarticles.add(tempPap)	
 
 def updatePapers():
+	NoDays = 5
+	thisDay = datetime.date.today()
+	oneDay = datetime.timedelta(days=1)
+	date = thisDay - oneDay*NoDays
 
-	papers = newPaper.objects.all()
+	papers = newPaper.objects.filter(added_at = date)	
+
 	for article in papers:
 		posts = article.post_set.all()
-		#Delete the paper if it has no posts
+		# Deletes the paper if it has not comments on it
 		if len(posts) == 0:
 			article.delete()
 		else:
@@ -328,7 +333,6 @@ def search(request):
 	url = baseurl + "search?ln=en&ln=en&p=" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=17&sc=0"
 	r = requests.get(url)
 
-	# "https://inspirehep.net/search?ln=en&ln=en&p=bartrum&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=17&sc=0
 	template = loader.get_template("result_instance.html")
 
 
@@ -345,10 +349,11 @@ def search(request):
 # This function takes the paperID, performs the search and stores the paper in the Model.
 def paperStore(paperID):
 	
-	url = "https://inspirehep.net/record/"+str(paperID)+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info"
+	url = "https://inspirehep.net/record/"+str(paperID)+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info,primary_report_number"
 	r = requests.get(url).json()[0]
 	title = r['title']['title']	
 	Inspires_no = r['recid']
+	arxiv_no = r['primary_report_number']
 
 	# The format the abstracts come in is non standard, this seems to pick up the cases well enough....
 	if 'abstract' in r:
@@ -360,12 +365,14 @@ def paperStore(paperID):
 		abstract = "No abstract"	
 
 	# Create the journal ref
-	info = r['publication_info']	
-	journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
-	
+	info = r['publication_info']
+	if info != None:
+		journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
+	else:
+		journal_ref = None
 
 	# Save the paper to the database
-	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no, journal = journal_ref)
+	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no, journal = journal_ref, arxiv_no = arxiv_no)
 	paperObj.save()	
 
 	# Adds the authors to the database ad links them to the paper
@@ -389,6 +396,7 @@ def paperStore(paperID):
 # This creates the single paper page for both arxiv and inspires papers
 def paperdisplay(request, paperID):
 
+	# It it has an arxiv prefix
 	if paperID[0:6]=="arxiv:":
 		paperChoice = newPaper.objects.get(arxiv_no = paperID[6:])
 	else:
@@ -465,7 +473,7 @@ def getMessages(request):
 		article = newPaper.objects.get(arxiv_no = arxiv_no)
 	# Otherwise we look for it in the permanent db
 	else:
-		article = Paper.objects.get(Inspires_no = message_id)
+		article = Paper.objects.get(Inspires_no = str(message_id))
 
 	posts = article.post_set.all()
 
