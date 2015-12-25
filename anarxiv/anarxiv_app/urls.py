@@ -27,6 +27,7 @@ urlpatterns = [
 
 	# Login urls
 	url(r'^register/check/email/', views.checkEmail , name='checkEmail'),
+	url(r'^register/check/username/', views.checkUsername , name='checkUsername'),
 	url(r'^register/', views.registrationForm , name='registrationForm'),
 
 	url(r'^login/', views.login, name='login'),

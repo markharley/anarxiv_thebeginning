@@ -15,8 +15,8 @@
 		 		<input type="text" class="form-control" id="email" onchange="checkEmail()">
 			</div>
 
-			<div id="emailOK" class="col-xs-2 alert alert-success alert-inForm" style="display : none">
-				Email valid and available for use.
+			<div id="emailOK" class="col-xs-3 alert alert-success alert-inForm" style="display : none">
+				Email <span id="proposedEmail"></span> valid and available for use.
 			</div>
 
 			<div id="emailError" class="col-xs-1 alert alert-danger alert-inForm" style="display : none">
@@ -24,7 +24,7 @@
 			</div>
 			
 			<div id="emailInUse" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
-				Address already in use.
+				Email <span id="proposedEmail"></span> already in use.
 			</div>
 			
 			<div id="emailPollFailed" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
@@ -37,6 +37,19 @@
 			<div class="form-group col-xs-2">
 		 		<input type="text" class="form-control" id="usr" onchange="checkUsername()">
 			</div>
+
+			<div id="usernameOK" class="col-xs-3 alert alert-success alert-inForm" style="display : none">
+				Username <span id="proposedUsername"> </span> is available for use.
+			</div>
+
+			<div id="usernameInUse" class="col-xs-3 alert alert-danger alert-inForm" style="display : none">
+				Username: <span id="proposedUsername"></span> is already taken.
+			</div>
+			
+			<div id="usernamePollFailed" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
+				Failed to contact server.
+			</div>
+
 		</div>
 
 		<div class="row">
@@ -70,10 +83,12 @@
 
 		var emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
+
 		function checkEmail(){
 			var inputEmail = $('#email').val();
 			if (emailRegex.exec(inputEmail)) {
 				emailPollStatus="valid";
+				$('#proposedEmail').html(inputEmail);
 				pollForEmail(inputEmail);
 			} else {
 				emailPollStatus="invalid";
@@ -89,15 +104,16 @@
 				datatype: "JSON",
 
 				success: function(data) {
-					emailPollStatus = data["emailAvailable"]
-					displayEmailValidationMessage();
+					emailPollStatus = data["emailAvailable"];
 				},
 
 				error: function(jqXHR, textStatus, errorThrown) {
 					emailPollStatus="serverError";
+				}
+			}).done( function () {
 					displayEmailValidationMessage();
 				}
-			});
+			);
 		}
 
 		function displayEmailValidationMessage(){
@@ -120,6 +136,51 @@
 
 				case "serverError" :
 					$("#emailPollFailed").css('display','inline-block');
+					break;
+
+				default :
+					break;
+			}
+		}
+
+		function checkUsername(){
+			var username = $('#usr').val();
+			$('#proposedUsername').html(username);
+			$.ajax({
+				type: "POST",
+				url: "/home/register/check/username/",
+				data: {"username" : username}, 
+				datatype: "JSON",
+
+				success: function(data) {
+					usernamePollStatus = data["usernameAvailable"];
+				},
+
+				error: function(jqXHR, textStatus, errorThrown) {
+					usernamePollStatus="serverError";
+				}
+			}).done( function () {
+					displayUsernameValidationMessage();
+				}
+			);
+		}
+
+		function displayUsernameValidationMessage(){
+			$('#usernameOK').css('display','none');
+			$('#usernameInUse').css('display','none');
+			$('#usernamePollFailed').css('display','none');
+
+			switch (usernamePollStatus) {
+				case "available" :
+					$('#usernameOK').css('display','inline-block');
+					break;
+
+				case "inUse" :
+					$('#usernameInUse').css('display','inline-block');
+					break;
+
+				case "serverError" :
+					$('#usernamePollFailed').css('display','inline-block');
 					break;
 
 				default :

@@ -31,6 +31,17 @@ def checkEmail(request):
 	else:
 		return JsonResponse({"emailAvailable" : "available"})			
 
+def checkUsername(request):
+	try:
+		attemptedUsername=request.POST["username"]
+	except:
+		return JsonResponse({})
+
+	if User.objects.filter(username=attemptedUsername).exists():
+		return JsonResponse({"usernameAvailable" : "inUse"})
+	else:
+		return JsonResponse({"usernameAvailable" : "available"})
+
 
 def login(request):
 	try:
