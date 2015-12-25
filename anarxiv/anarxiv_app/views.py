@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
-from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
+from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv, User
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
@@ -19,6 +19,18 @@ def home(request):
 
 def registrationForm(request):
 	return render(request,'registration.html',{})
+
+def checkEmail(request):
+	try:
+		attemptedEmail=request.POST["email"]
+	except:
+		return JsonResponse({})
+
+	if User.objects.filter(email=attemptedEmail).exists():
+		return JsonResponse({"emailAvailable" : "inUse"})
+	else:
+		return JsonResponse({"emailAvailable" : "available"})			
+
 
 def login(request):
 	try:

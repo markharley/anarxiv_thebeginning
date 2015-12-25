@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %} 
+	Anarxiv
+{% endblock %}
+
+{% block content %}
+	<h3 style="padding-left: 30px">Welcome! We just need a few details to register you as a user.</h3>
+	<br>
+	<form class="container-fluid" role="form" class="col-large" style="padding-left: 30px" >
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px;">Email address:</label>
+			<div class="form-group col-xs-2" >
+		 		<input type="text" class="form-control" id="email" onchange="checkEmail()">
+			</div>
+
+			<div id="emailOK" class="col-xs-2 alert alert-success alert-inForm" style="display : none">
+				Email valid and available for use.
+			</div>
+
+			<div id="emailError" class="col-xs-1 alert alert-danger alert-inForm" style="display : none">
+				Invalid email.
+			</div>
+			
+			<div id="emailInUse" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
+				Address already in use.
+			</div>
+			
+			<div id="emailPollFailed" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
+				Failed to contact server.
+			</div>
+		</div>
+
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px;">Please choose a username:</label>
+			<div class="form-group col-xs-2">
+		 		<input type="text" class="form-control" id="usr" onchange="checkUsername()">
+			</div>
+		</div>
+
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px">Choose a password:</label>
+			<div class="form-group col-xs-2">
+		 		<input type="password" class="form-control" id="pwd">
+			</div>
+		</div>
+
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px">Retype password:</label>
+			<div class="form-group col-xs-2">
+		 		<input type="password" class="form-control" id="pwdconf">
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-xs-3">
+			</div>
+			<div class="col-xs-1">
+				<button type="button" class="btn btn-block"> Submit </button>
+			</div>
+		</div>
+
+	</form>
+
+	<script type="text/javascript">
+		// html5 standard email validation regex, see  
+		// http://www.w3.org/TR/html5/forms.html#valid-e-mail-address
+		// for details
+
+		var emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+		function checkEmail(){
+			var inputEmail = $('#email').val();
+			if (emailRegex.exec(inputEmail)) {
+				emailPollStatus="valid";
+				pollForEmail(inputEmail);
+			} else {
+				emailPollStatus="invalid";
+				displayEmailValidationMessage();
+			}
+		}
+
+		function pollForEmail(email){
+			$.ajax({
+				type: "POST",
+				url: "/home/register/check/email/",
+				data: {"email" : email}, 
+				datatype: "JSON",
+
+				success: function(data) {
+					emailPollStatus = data["emailAvailable"]
+					displayEmailValidationMessage();
+				},
+
+				error: function(jqXHR, textStatus, errorThrown) {
+					emailPollStatus="serverError";
+					displayEmailValidationMessage();
+				}
+			});
+		}
+
+		function displayEmailValidationMessage(){
+			$("#emailError").css('display','none');
+			$("#emailInUse").css('display','none');
+			$("#emailOK").css('display','none');
+			$("#emailPollFailed").css('display','none');
+			switch (emailPollStatus) {
+				case "invalid" :
+					$('#emailError').css('display','inline-block');
+					break;
+
+				case "available" :
+					$("#emailOK").css('display','inline-block');
+					break;
+
+				case "inUse" :
+					$("#emailInUse").css('display','inline-block');
+					break;
+
+				case "serverError" :
+					$("#emailPollFailed").css('display','inline-block');
+					break;
+
+				default :
+					break;
+			}
+		}
+	</script>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
