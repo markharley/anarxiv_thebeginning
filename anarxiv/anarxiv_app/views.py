@@ -42,6 +42,21 @@ def checkUsername(request):
 	else:
 		return JsonResponse({"usernameAvailable" : "available"})
 
+def registrationRequest(request):
+	try:
+		email=request.POST["email"]
+		username=request.POST["username"]
+		password=request.POST["password"]
+		academicQ=(request.POST["academicQ"]=="true")
+		print academicQ,request.POST["academicQ"]
+	except:
+		return JsonResponse({})
+	try:
+		newuser = User.objects.create_user(email,username,password,academicQ)
+		newuser.save()
+	except:
+		return JsonResponse({})
+	return JsonResponse({})
 
 def login(request):
 	try:

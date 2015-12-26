@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 {% block title %} 
-	Anarxiv
+	Anarxiv Registration
 {% endblock %}
 
 {% block content %}
@@ -62,18 +62,22 @@
 		<div class="row">
 			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px">Retype password:</label>
 			<div class="form-group col-xs-2">
-		 		<input type="password" class="form-control" id="pwdconf">
+		 		<input type="password" class="form-control" id="pwdconf" onchange="confirmPassword()">
 			</div>
+
+			<div id="pwdConfFail" class="col-xs-2 alert alert-danger alert-inForm" style="display : none"> Passwords don't match.</div>
 		</div>
 
 		<div class="row">
-			<div class="col-xs-3">
+			<div class="col-xs-3">	
+				<div class="checkbox">
+					<label><input id="academicQ" type="checkbox" value="">University affiliated</label>
+				</div>
 			</div>
 			<div class="col-xs-1">
-				<button type="button" class="btn btn-block"> Submit </button>
+				<button type="button" class="btn btn-block" onclick="submitAccountRequest()"> Submit </button>
 			</div>
 		</div>
-
 	</form>
 
 	<script type="text/javascript">
@@ -97,7 +101,7 @@
 		}
 
 		function pollForEmail(email){
-			$.ajax({
+			emailPoll=$.ajax({
 				type: "POST",
 				url: "/home/register/check/email/",
 				data: {"email" : email}, 
@@ -146,7 +150,7 @@
 		function checkUsername(){
 			var username = $('#usr').val();
 			$('#proposedUsername').html(username);
-			$.ajax({
+			usernamePoll=$.ajax({
 				type: "POST",
 				url: "/home/register/check/username/",
 				data: {"username" : username}, 
@@ -186,6 +190,44 @@
 				default :
 					break;
 			}
+		}
+
+		function confirmPassword() {
+			var pwd = $("#pwd").val();
+			var pwdconf = $("#pwdconf").val();
+			if (pwd !== pwdconf) {
+				$("#pwdConfFail").css('display','inline-block');
+				pwdConf=null;
+			} else {
+				$("#pwdConfFail").css('display','none');
+				pwdConf="true";
+			}
+		}
+
+		function submitAccountRequest() {
+			checkEmail();
+			checkUsername();
+			confirmPassword();
+			$.when(usernamePoll,emailPoll).then( function (v1,v2) {
+					if (pwdConf) {
+						var username = $('#usr').val();
+						var inputEmail = $('#email').val();
+						var pwd = $("#pwd").val();
+						var academicQ = $("#academicQ").is(':checked')
+						alert(academicQ)
+						$.ajax({
+							type: "POST",
+							url : "/home/register/registrationRequest",
+							data: {"email":inputEmail, "username":username, "password":pwd, "academicQ":academicQ},
+							datatype : "JSON",
+
+							success: function(){
+								window.location.replace("/home/")
+							}
+						});
+					}
+				}
+			);
 		}
 	</script>
 {% endblock %}
