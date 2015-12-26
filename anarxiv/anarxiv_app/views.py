@@ -48,7 +48,6 @@ def registrationRequest(request):
 		username=request.POST["username"]
 		password=request.POST["password"]
 		academicQ=(request.POST["academicQ"]=="true")
-		print academicQ,request.POST["academicQ"]
 	except:
 		return JsonResponse({})
 	try:
