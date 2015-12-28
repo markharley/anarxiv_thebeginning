@@ -83,7 +83,7 @@ p {
 
 
 /*SUBANARXIV SEARCH ENVIRONMENT*/
-#test2{
+#Results{
     overflow:scroll;
     max-height :700px;
 }
@@ -140,7 +140,7 @@ p {
 .spinner{
     position:relative;
     left:50%;
-    top:100px;
+    top:50px;
 
 }
 
