@@ -92,8 +92,15 @@ def getDailyPapers():
 
 
 		article = paper['metadata']['arXiv']
-		date_added =  paper['header']['datestamp']
+		
+		# Checks if the paper is new or has been updated (if it's been updated it is not new)
+		if 'updated' in article:
+			newtemp = 'no'
+		else:
+			newtemp = 'yes'	
 
+
+		date_added =  paper['header']['datestamp']
 		title = article['title']
 		abstract = article['abstract']
 		arxiv_no = article['id']
@@ -101,7 +108,7 @@ def getDailyPapers():
 
 		# Adding the paper to the temperary model only adds the paper if is not already in the database
 		if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 0:
-			tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no, added_at = date_added)
+			tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no, added_at = date_added, new = newtemp)
 			tempPap.save()	
 			# Attaches the subarxivs to the paper
 			for subarea in subareas:
@@ -189,7 +196,8 @@ def dailyPaperDisplay(request):
 	papers = area.newpaper_set.all().filter(added_at = date)
 
 	template = loader.get_template("result_instance.html")
-	renderList =[]
+	newList =[]
+	replacementList = []
 
 	for paper in papers:
 		AuthorList = paper.author_set.all()
@@ -209,14 +217,16 @@ def dailyPaperDisplay(request):
 		else: 
 			shortList = allAuthors	
 
-				
+		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'recid' : 'arxiv:'+ paper.arxiv_no, 'subanarxiv':subanarxiv, 'arxiv_no': paper.arxiv_no, 'new': paper.new}
+	
+		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
+		if paper.new == 'no':
+			replacementList.append(str(template.render(context).encode('utf8')))		
+		else:
+			newList.append(str(template.render(context).encode('utf8')))		
+		
 
-		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'recid' : 'arxiv:'+ paper.arxiv_no, 'subanarxiv':subanarxiv, 'arxiv_no': paper.arxiv_no}
-
-		renderList.append(str(template.render(context).encode('utf8')))	
-
-
-	return JsonResponse({'htmlList': renderList})
+	return JsonResponse({'newList': newList, 'replacementList': replacementList})
 
 # This is a specific search function for the arxiv takes a specific date and area as the input
 @csrf_exempt
@@ -224,8 +234,6 @@ def specificRequest(request):
 	date = request.POST['date']
 	area = request.POST['sub_anarxiv']
 	startDate = datetime.datetime.strptime(date, "%Y-%m-%d")
-
-
 
 	url = 'http://export.arxiv.org/oai2?verb=ListRecords&metadataPrefix=arXiv&set=' + area + '&from=' + str(startDate) + '&until=' + str(startDate)
 
@@ -237,6 +245,8 @@ def specificRequest(request):
 
 	template = loader.get_template("result_instance.html")
 	renderList = []
+	newList = []
+	replacementList = []
 
 	# Iterating over the papers 
 	for paper in papers:
@@ -266,11 +276,16 @@ def specificRequest(request):
 			secondName = author['keyname']
 			AuthorList += secondName + ", "
 
-		context = {'title': title, 'arxiv_no': arxiv_no}	
+		context = {'title': title, 'authors': AuthorList, 'arxiv_no': arxiv_no}	
 
-		renderList.append(str(template.render(context).encode('utf8')))		
+		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
+		if 'updated' in article:
+			replacementList.append(str(template.render(context).encode('utf8')))		
+		else:
+			newList.append(str(template.render(context).encode('utf8')))		
+		
 
-	return JsonResponse({'htmlList': renderList})		
+	return JsonResponse({'htmlList': renderList, 'newList': newList, 'replacementList':replacementList})		
 		
 
 ########################################################################################################################################################################################################

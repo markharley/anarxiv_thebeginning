@@ -97,10 +97,11 @@ class newPaper(models.Model):
 	Inspires_no = models.CharField(max_length=100, null = True)
 	arxiv_no = models.CharField(max_length=50, null = True )
 
-	# Tracks the date the paper was added to the arxiv
-	# added_at = models.DateTimeField(auto_now_add=True)
-
+	# Date in which the paper appears on the OIA feed
 	added_at = models.CharField(max_length=50, null = True)
+
+	# Key to register if the paper is new or a replacement
+	new = models.CharField(max_length=50, null = True)
 
 
 	area = models.ManyToManyField(subArxiv)

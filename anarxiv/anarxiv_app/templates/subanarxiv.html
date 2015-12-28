@@ -17,12 +17,23 @@
 	<input type="text" id="searchdate">
 	<button type="button" onclick="search()" id = "searchButton">Search</button>
 
-	<div id= "test2"> <br> </div>
+	<h2> New </h2>
+
+	<div id= "New"> <br> </div>
 	<div id="spinner" class="spinner" style="display:block;">
 		<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
 	</div>
 
-	<center><div id = "searchFail" style ="display:none;"> No results for this day... </div></center>
+	<center><div id = "newFail" style ="display:none;"> No new results for this day... </div></center>
+
+
+	<h2> Replacements </h2>
+
+	<div id= "Replacements"> <br> </div>
+
+	<center><div id = "replacementFail" style ="display:none;"> No replacements for this day... </div></center>
+
+
 
 
 {% endblock %}
@@ -39,44 +50,80 @@
 
 	           	success: function(data){	
 	           		$("#spinner").css("display", "none");
-	           		var length = data['htmlList'].length;
-	           		for(var i = 0; i< length; i++){
-	           			$('#test2').append(data['htmlList'][i]); } 
+	           		var nlength = data['newList'].length;
+	           		var rlength = data['replacementList'].length;
+
+	           		if(nlength == 0){
+	           			$("#newFail").css("display","block")
+	           		}
+	           		if(rlength == 0){
+	           			$("#replacementFail").css("display","block")
+	           		}
+
 	           		
-		        	}
-	       }
+	           		for(var i = 0; i< nlength; i++){
+	           				$('#New').append(data['newList'][i])
+	           				}
+
+	           		for(var i = 0; i< rlength; i++){
+	           				$('#Replacements').append(data['replacementList'][i])  
+	           				}		
+
+	           		
+	           	}
+	     }
 	           	
 	));
 
 
 function getRecent(date) {
-	$('#searchFail').css("display","none");
-	$('#test2').html("");
+
+	$('#newFail').css("display","none");
+	$('#replacementFail').css("display","none")
+
+	$('#New').html("");
+	$('#Replacements').html("");
 
 	$("#spinner").css("display", "block");
 
 		$.ajax({
- 			type: "POST",
-           	url: "../new/",
-           	data: {'sub_anarxiv': '{{ ABREV }}', 'date': date },
-           	datatype: "JSON",
+	 			type: "POST",
+	           	url: "../new/",
+	           	data: {'sub_anarxiv': '{{ ABREV }}', 'date': date },
+	           	datatype: "JSON",
 
-   		success: function(data) {
-  			$("#spinner").css("display", "none");
-   			var length = data['htmlList'].length;
-   			if(length==0){
-   				$('#searchFail').css("display","block");
-   			}
+   			success: function(data) {
+	  			
+	  			$("#spinner").css("display", "none");
 
-   			for(var i =0; i < length; i++){
-   				$('#test2').append(data['htmlList'][i]);  }
-    	},
+	   			var nlength = data['newList'].length;
+	   			var rlength = data['replacementList'].length;
 
-    	error: function(jqXHR, textStatus, errorThrown) {
-    		if(jqXHR.status ==500){
-    			$("#spinner").css("display", "none");
-    			$('#searchFail').css("display","block");
+	   			if(nlength == 0){
+	           		$("#newFail").css("display","block")
+	           	}
+	           	if(rlength == 0){
+	           		$("#replacementFail").css("display","block")
+	          	}
+
+
+	   			for(var i = 0; i< nlength; i++){
+	           		$('#New').append(data['newList'][i])
+	         	}
+
+	         	for(var i = 0; i< rlength; i++){
+       				$('#Replacements').append(data['replacementList'][i])  
+   				}	
+
+	        },
+
+
+    		error: function(jqXHR, textStatus, errorThrown) {
+    			if(jqXHR.status ==500){
+    				$("#spinner").css("display", "none");
+    				$('#searchFail').css("display","block");
     		}
+		
 		}
      });
 };
@@ -84,27 +131,38 @@ function getRecent(date) {
 
 
 function search() {
-	$('#searchFail').css("display","none");
-	$('#test2').html("");
+
+	$('#newFail').css("display","none");
+	$('#replacementFail').css("display","none")
+
+	$('#New').html("");
+	$('#Replacements').html("");
 
 	$("#spinner").css("display", "block");
 
 	var x = document.getElementById("searchdate").value;
-		$.ajax({
+	
+	$.ajax({
  		type: "POST",
    		url: "../search/",
    		data: {'date': x, 'sub_anarxiv': '{{ ABREV }}'},
    		datatype: "JSON",
 
-
    		success: function(data) {
-   			console.log("here");
+   			
   			$("#spinner").css("display", "none");
 
-   			var length = data['htmlList'].length;
+			var nlength = data['newList'].length;
+   			var rlength = data['replacementList'].length;
 
-   			for(var i =0; i < length; i++){
-   				$('#test2').append(data['htmlList'][i]);  }
+   			for(var i = 0; i< nlength; i++){
+           		$('#New').append(data['newList'][i])
+         	}
+
+         	for(var i = 0; i< rlength; i++){
+   				$('#Replacements').append(data['replacementList'][i])  
+			}	
+
     	},
 
     	error: function(jqXHR, textStatus, errorThrown) {
