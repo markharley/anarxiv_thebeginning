@@ -4,7 +4,7 @@ from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-import requests, json, feedparser, re, urllib2, xmltodict, datetime
+import requests, json, feedparser, re, urllib2, xmltodict, datetime, time
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
 
@@ -57,6 +57,82 @@ def subanarxiv(request,area):
 	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, "DATE": FiveDays}
 	return render(request,'subanarxiv.html', context)
 
+# Stores the new papers in the newPaper model
+def newPaperStore(paper):
+	# This creates the subarxiv areas
+	sub = paper['header']['setSpec']
+	if isinstance(sub,list) == False:
+		subareas = []
+		subareas.append(sub)
+	else:
+		subareas = sub	
+
+	for subarea in subareas:
+		if subArxiv.objects.filter(region = subarea).count() == 0:
+			subarx = subArxiv(region = subarea)
+			subarx.save()
+
+
+	article = paper['metadata']['arXiv']
+	
+	# Checks if the paper is new or has been updated (if it's been updated it is not new)
+	if 'updated' in article:
+		newtemp = 'no'
+	else:
+		newtemp = 'yes'	
+
+
+	date_added =  paper['header']['datestamp']
+	title = article['title']
+	abstract = article['abstract']
+	arxiv_no = article['id']
+
+
+	# Adding the paper to the temperary model only adds the paper if is not already in the database
+	if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 0:
+		tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no, added_at = date_added, new = newtemp)
+		tempPap.save()	
+		# Attaches the subarxivs to the paper
+		for subarea in subareas:
+			temp = subArxiv.objects.get(region = subarea)
+			tempPap.area.add(temp)
+
+	else:
+		tempPap = newPaper.objects.get(arxiv_no = arxiv_no)
+		for subarea in subareas:
+			temp = subArxiv.objects.get(region = subarea)
+			tempPap.area.add(temp)
+
+
+	# Attaches the authors to the paper		
+	authors = article['authors']['author']
+
+	if isinstance(authors,list) == False:
+		newAuthors = []
+		newAuthors.append(authors)
+	else:
+		newAuthors = authors	
+
+
+	for author in newAuthors:
+		if 'forenames' in author:
+			firstName = author['forenames']
+		else:
+			firstName = None
+		
+		secondName = author['keyname']
+
+		if Author.objects.filter(firstName = firstName, secondName = secondName).count() == 0:
+	
+			temp = Author(firstName = firstName, secondName = secondName)
+			temp.save()
+			# Adds the paper to the Author
+			temp.newarticles.add(tempPap)
+		
+		else:
+			temp = Author.objects.get(firstName = firstName, secondName = secondName)
+			temp.newarticles.add(tempPap)	
+
 # Gets last five days papers from the arxiv runs from command line "python manage.py getNewPapers"
 def getDailyPapers():
 	NoDays = 5
@@ -65,89 +141,46 @@ def getDailyPapers():
 	date = thisDay - oneDay*NoDays
 
 	# requesting and accessing paper data
+	baseurl = 'http://export.arxiv.org/oai2?verb=ListRecords'
+	url = baseurl + '&metadataPrefix=arXiv&from=' + str(date)
 
-	url = 'http://export.arxiv.org/oai2?verb=ListRecords&metadataPrefix=arXiv&from=' + str(date)
+	while True:
 
-	urlfile = urllib2.urlopen(url)
-	data = urlfile.read()
-	urlfile.close()
-	data = xmltodict.parse(data)
-	papers = data['OAI-PMH']['ListRecords']['record']
-
-	# Iterating over the papers 
-	for paper in papers:
-
-		# This creates the subarxiv areas
-		sub = paper['header']['setSpec']
-		if isinstance(sub,list) == False:
-			subareas = []
-			subareas.append(sub)
-		else:
-			subareas = sub	
-
-		for subarea in subareas:
-			if subArxiv.objects.filter(region = subarea).count() == 0:
-				subarx = subArxiv(region = subarea)
-				subarx.save()
-
-
-		article = paper['metadata']['arXiv']
+		try: 
+			urlfile = urllib2.urlopen(url)
 		
-		# Checks if the paper is new or has been updated (if it's been updated it is not new)
-		if 'updated' in article:
-			newtemp = 'no'
-		else:
-			newtemp = 'yes'	
+		# if this request fails we wait for 30s before rerequesting
+		except urllib2.HTTPError, e:
+			if e.code == 503:
+				to = int(e.hdrs.get("retry-after", 30))
 
-
-		date_added =  paper['header']['datestamp']
-		title = article['title']
-		abstract = article['abstract']
-		arxiv_no = article['id']
-
-
-		# Adding the paper to the temperary model only adds the paper if is not already in the database
-		if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 0:
-			tempPap = newPaper(title = title, abstract = abstract, arxiv_no = arxiv_no, added_at = date_added, new = newtemp)
-			tempPap.save()	
-			# Attaches the subarxivs to the paper
-			for subarea in subareas:
-				temp = subArxiv.objects.get(region = subarea)
-				tempPap.area.add(temp)
-
-		else:
-			tempPap = newPaper.objects.get(arxiv_no = arxiv_no)
-			for subarea in subareas:
-				temp = subArxiv.objects.get(region = subarea)
-				tempPap.area.add(temp)
-
-
-		# Attaches the authors to the paper		
-		authors = article['authors']['author']
-
-		if isinstance(authors,list) == False:
-			newAuthors = []
-			newAuthors.append(authors)
-		else:
-			newAuthors = authors	
-
-
-		for author in newAuthors:
-			if 'forenames' in author:
-				firstName = author['forenames']
-			
-			secondName = author['keyname']
-
-			if Author.objects.filter(firstName = firstName, secondName = secondName).count() == 0:
-		
-				temp = Author(firstName = firstName, secondName = secondName)
-				temp.save()
-				# Adds the paper to the Author
-				temp.newarticles.add(tempPap)
-			
+				time.sleep(to)
+				continue
+			   
 			else:
-				temp = Author.objects.get(firstName = firstName, secondName = secondName)
-				temp.newarticles.add(tempPap)	
+				raise		
+
+
+		data = urlfile.read()
+		urlfile.close()
+		data = xmltodict.parse(data)
+		papers = data['OAI-PMH']['ListRecords']['record']
+
+		# Iterating over the papers 
+		for paper in papers:
+			newPaperStore(paper)
+
+		# Gets the resumptionToken if it exists and adjusts the url accordingly	
+		if 'resumptionToken' in data['OAI-PMH']['ListRecords'] and '#text' in data['OAI-PMH']['ListRecords']['resumptionToken']:
+			resumptionToken = data['OAI-PMH']['ListRecords']['resumptionToken']['#text']
+			url = baseurl + '&resumptionToken=' + resumptionToken 
+
+		else:
+			break
+
+	 
+
+
 
 def updatePapers():
 	NoDays = 5
@@ -204,14 +237,21 @@ def dailyPaperDisplay(request):
 		allAuthors =""
 
 		for author in AuthorList:
-
-			allAuthors += author.firstName + " " + author.secondName + ", "
+			if author.firstName != None:
+				allAuthors += author.firstName + " " + author.secondName + ", "		
+			else:
+				allAuthors +=  author.secondName + ", "		
+					
 			
 		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
 			
 		# Prints "et al" for large numbers of authors
 		if len(AuthorList) > 5:		
-			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
+			if AuthorList[0].firstName != None:
+				shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
+			else:
+				shortList = AuthorList[0].secondName + " et al..."	
+
 			allAuthors = shortList	
 	
 		else: 
