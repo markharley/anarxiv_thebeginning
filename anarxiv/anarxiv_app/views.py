@@ -316,7 +316,19 @@ def specificRequest(request):
 			secondName = author['keyname']
 			AuthorList += secondName + ", "
 
-		context = {'title': title, 'authors': AuthorList, 'arxiv_no': arxiv_no}	
+		if 'forenames' in newAuthors[0]:	
+			ShortList = newAuthors[0]['forenames'] + " " + newAuthors[0]['keyname'] + " et al.."	
+		else:
+			ShortList = newAuthors[0]['keyname'] + " et al.."			
+
+		# Chose whether to use the short list of the long list	
+		if len(newAuthors) >5:
+			ListToUse = ShortList
+		else:
+			ListToUse = AuthorList	
+
+
+		context = {'title': title, 'authors': ListToUse, 'arxiv_no': arxiv_no}	
 
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if 'updated' in article:
