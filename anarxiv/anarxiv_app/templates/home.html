@@ -8,24 +8,32 @@
 
 {% block content %}
 <div id = "content">
-	<h2> Physics </h2>
-		<ul>
+	<h4> Get the latest papers: </h4>
+
+		<div class="dropdown">
+		<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Sub arXiv region
+		<span class="caret"></span></button>
+		<ul class="dropdown-menu">
 			{% for location, name in subAnarxivs.items %}
 				<li> <a href="subanarxiv/{{location}}">{{name}}</a>  </li>
 			{% endfor %}
 		</ul>
+		</div>
 
-	<input type="text" id="surname" value="bartrum">
-	<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
+	<h4> Search the arXiv and inspires: </h4>	
 
-	<div id= "test"> <br> </div>
+		<input type="text" id="surname" value="bartrum">
+		<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
+		<div> Summarise the search parameters the search accepts here... at the moment the search accepts firstnames and surnames</div>
 
-	<div id="spinner" class="spinner" style="display:none;">
-			<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
-	</div>
+		<div id= "test"> <br> </div>
 
-	<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
-	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
+		<div id="spinner" class="spinner" style="display:none;">
+				<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
+		</div>
+
+		<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
+		<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 </div>
 {% endblock %}
 
