@@ -178,12 +178,52 @@ def getDailyPapers():
 		else:
 			break
 
-	 
+def thisDaysPapers():
+	NoDays = 0
+	thisDay = datetime.date.today()
+	oneDay = datetime.timedelta(days=1)
+	date = thisDay - oneDay*NoDays
+
+	# requesting and accessing paper data
+	baseurl = 'http://export.arxiv.org/oai2?verb=ListRecords'
+	url = baseurl + '&metadataPrefix=arXiv&from=' + str(date)
+
+	while True:
+
+		try: 
+			urlfile = urllib2.urlopen(url)
+		
+		# if this request fails we wait for 30s before rerequesting
+		except urllib2.HTTPError, e:
+			if e.code == 503:
+				to = int(e.hdrs.get("retry-after", 30))
+
+				time.sleep(to)
+				continue
+			   
+			else:
+				raise		
 
 
+		data = urlfile.read()
+		urlfile.close()
+		data = xmltodict.parse(data)
+		papers = data['OAI-PMH']['ListRecords']['record']
+
+		# Iterating over the papers 
+		for paper in papers:
+			newPaperStore(paper)
+
+		# Gets the resumptionToken if it exists and adjusts the url accordingly	
+		if 'resumptionToken' in data['OAI-PMH']['ListRecords'] and '#text' in data['OAI-PMH']['ListRecords']['resumptionToken']:
+			resumptionToken = data['OAI-PMH']['ListRecords']['resumptionToken']['#text']
+			url = baseurl + '&resumptionToken=' + resumptionToken 
+
+		else:
+			break	 
 
 def updatePapers():
-	NoDays = 5
+	NoDays = 4
 	thisDay = datetime.date.today()
 	oneDay = datetime.timedelta(days=1)
 	date = thisDay - oneDay*NoDays
@@ -215,6 +255,8 @@ def updatePapers():
 
 			except ValueError:
 				pass	
+
+		
 
 
 
