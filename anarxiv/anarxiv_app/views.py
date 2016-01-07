@@ -4,7 +4,7 @@ from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-import requests, json, feedparser, re, urllib2, xmltodict, datetime, time
+import requests, json, feedparser, re, urllib2, xmltodict, datetime, time, urllib
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
 
@@ -178,49 +178,49 @@ def getDailyPapers():
 		else:
 			break
 
-def thisDaysPapers():
-	NoDays = 0
-	thisDay = datetime.date.today()
-	oneDay = datetime.timedelta(days=1)
-	date = thisDay - oneDay*NoDays
+# def thisDaysPapers():
+# 	NoDays = 0
+# 	thisDay = datetime.date.today()
+# 	oneDay = datetime.timedelta(days=1)
+# 	date = thisDay - oneDay*NoDays
 
-	# requesting and accessing paper data
-	baseurl = 'http://export.arxiv.org/oai2?verb=ListRecords'
-	url = baseurl + '&metadataPrefix=arXiv&from=' + str(date)
+# 	# requesting and accessing paper data
+# 	baseurl = 'http://export.arxiv.org/oai2?verb=ListRecords'
+# 	url = baseurl + '&metadataPrefix=arXiv&from=' + str(date)
 
-	while True:
+# 	while True:
 
-		try: 
-			urlfile = urllib2.urlopen(url)
+# 		try: 
+# 			urlfile = urllib2.urlopen(url)
 		
-		# if this request fails we wait for 30s before rerequesting
-		except urllib2.HTTPError, e:
-			if e.code == 503:
-				to = int(e.hdrs.get("retry-after", 30))
+# 		# if this request fails we wait for 30s before rerequesting
+# 		except urllib2.HTTPError, e:
+# 			if e.code == 503:
+# 				to = int(e.hdrs.get("retry-after", 30))
 
-				time.sleep(to)
-				continue
+# 				time.sleep(to)
+# 				continue
 			   
-			else:
-				raise		
+# 			else:
+# 				raise		
 
 
-		data = urlfile.read()
-		urlfile.close()
-		data = xmltodict.parse(data)
-		papers = data['OAI-PMH']['ListRecords']['record']
+# 		data = urlfile.read()
+# 		urlfile.close()
+# 		data = xmltodict.parse(data)
+# 		papers = data['OAI-PMH']['ListRecords']['record']
 
-		# Iterating over the papers 
-		for paper in papers:
-			newPaperStore(paper)
+# 		# Iterating over the papers 
+# 		for paper in papers:
+# 			newPaperStore(paper)
 
-		# Gets the resumptionToken if it exists and adjusts the url accordingly	
-		if 'resumptionToken' in data['OAI-PMH']['ListRecords'] and '#text' in data['OAI-PMH']['ListRecords']['resumptionToken']:
-			resumptionToken = data['OAI-PMH']['ListRecords']['resumptionToken']['#text']
-			url = baseurl + '&resumptionToken=' + resumptionToken 
+# 		# Gets the resumptionToken if it exists and adjusts the url accordingly	
+# 		if 'resumptionToken' in data['OAI-PMH']['ListRecords'] and '#text' in data['OAI-PMH']['ListRecords']['resumptionToken']:
+# 			resumptionToken = data['OAI-PMH']['ListRecords']['resumptionToken']['#text']
+# 			url = baseurl + '&resumptionToken=' + resumptionToken 
 
-		else:
-			break	 
+# 		else:
+# 			break	 
 
 def updatePapers():
 	NoDays = 4
@@ -256,11 +256,6 @@ def updatePapers():
 			except ValueError:
 				pass	
 
-		
-
-
-
-		
 # This takes the recently added papers out of the newPaper table and returns a rendered html response			
 @csrf_exempt
 def dailyPaperDisplay(request):
@@ -318,6 +313,7 @@ def specificRequest(request):
 	startDate = datetime.datetime.strptime(date, "%Y-%m-%d")
 
 	url = 'http://export.arxiv.org/oai2?verb=ListRecords&metadataPrefix=arXiv&set=' + area + '&from=' + str(startDate) + '&until=' + str(startDate)
+
 
 	urlfile = urllib2.urlopen(url)
 	data = urlfile.read()
@@ -404,13 +400,15 @@ def paperSearchDisplay(article):
 	else:
 		paper['abstract'] = "No abstract"		
 
-
 	# Gets the journal information
-	info = article['publication_info']	
-	journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
-	paper['journal_ref'] = journal_ref
 
+	if 'publication_info' in article:
+		info = article['publication_info']	
+		if 'title' in info:
+			journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
+			paper['journal_ref'] = journal_ref
 
+	
 	length = len(article['authors'])
 
 	Authors = ""
@@ -433,13 +431,12 @@ def paperSearchDisplay(article):
 	return paper	
 
 # Inspires search
-@csrf_exempt
-def search(request):
-	surname = request.POST['info'] 
+
+def InspiresSearch(searchdata):
 	
 	baseurl = "https://inspirehep.net/"
 
-	url = baseurl + "search?ln=en&ln=en&p=" + surname + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=17&sc=0"
+	url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=25&sc=0"
 	r = requests.get(url)
 
 	template = loader.get_template("result_instance.html")
@@ -454,6 +451,103 @@ def search(request):
 
 	
 	return JsonResponse({'htmlList': renderList})
+
+def arxivDisplay(article):
+	paper = {}
+	paper['title'] = article['title']
+	paper['recid'] = "arxiv:" + article['id'].split("/")[-1]
+
+	# The arXiv stores more than one abstract so this is the only way I can access it. Should be robust.
+	if 'summary' in article:
+		paper['abstract'] = article['summary']
+
+	# Gets the journal information
+
+	if 'arxiv:jounral_ref' in article:
+		paper['journal_ref'] = article['arxiv:journal_ref']['#text']
+
+
+	# in the case of a single author we need to insert it into a list to then manipulate	
+	if isinstance(article['author'],list) == False:
+		authorlist= []
+		authorlist.append(article['author'])
+	else:
+		authorlist = article['author']
+
+	length = len(authorlist)
+
+	Authors = ""
+	
+	for j in range(length):
+		Authors += (authorlist[j]['name']) + " "  
+		if length > 5:
+			Authors += ' et al.'
+			break
+		if j==length-1:
+			Authors += '.'
+		else:
+			Authors += ', '	
+
+	
+	paper['authors'] = Authors	
+
+	return paper	
+
+
+# arXiv search
+def arXivSearch(searchdata):
+
+	searchdata = searchdata.replace(" ","+AND+")
+
+	baseurl = "http://export.arxiv.org/api/" 
+	url = baseurl + "query?search_query=all:" + searchdata + "&start=0&max_results=25"
+	urlfile = urllib2.urlopen(url)
+	data = urlfile.read()
+	urlfile.close()
+	data = xmltodict.parse(data)
+
+	# this is the list of papers
+	papers = data['feed']['entry']
+	
+	if isinstance(papers,list) == False:
+		articles = []
+		articles.append(papers)
+	else:
+		articles = papers
+
+
+	template = loader.get_template("result_instance.html")
+
+	renderList = []
+
+	for article in articles:
+		paper = arxivDisplay(article)
+		
+		renderList.append(str(template.render(paper).encode('utf8')))
+
+	
+	return JsonResponse({'htmlList': renderList})
+
+
+
+
+# Search engine
+@csrf_exempt
+def search(request):
+	searchinfo = request.POST['info']
+	selectedsearch = request.POST['search']
+	
+
+	if selectedsearch == "Inspires":
+		# convert the string into a url friendly form
+		urlconverted = urllib.quote_plus(searchinfo)
+		return InspiresSearch(urlconverted)
+
+	if selectedsearch == "arXiv":
+		return arXivSearch(searchinfo)	
+
+
+
 
 # This function takes the paperID, performs the search and stores the paper in the Model.
 def paperStore(paperID):
@@ -505,9 +599,16 @@ def paperStore(paperID):
 # This creates the single paper page for both arxiv and inspires papers
 def paperdisplay(request, paperID):
 
-	# It it has an arxiv prefix
+	# It it has an arxiv prefix we search the newPaper and Paper models for it
 	if paperID[0:6]=="arxiv:":
-		paperChoice = newPaper.objects.get(arxiv_no = paperID[6:])
+		num = newPaper.objects.filter(arxiv_no = paperID[6:]).count()
+		if num != 0:
+			paperChoice = newPaper.objects.get(arxiv_no = paperID[6:])
+
+		num = Paper.objects.filter(arxiv_no = paperID[6:]).count()
+		if num !=0:
+			paperChoice = Paper.objects.get(arxiv_no = paperID[6:])
+
 	else:
 		# We store the paper in the Model if it is not already in the model
 		num = Paper.objects.filter(Inspires_no = paperID).count()
