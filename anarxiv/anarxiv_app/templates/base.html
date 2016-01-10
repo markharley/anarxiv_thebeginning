@@ -53,6 +53,8 @@
 		</div>
 	</div>
 
+	
+
 	<div id="wrapper">
 
 		<div id = "header">
@@ -65,6 +67,7 @@
 				{% endif %} >
 				<a href="#" data-toggle="modal" data-target="#loginModal"> Login </a>
 			</div>
+		
 			<div id = "userLoggedIn"
 				{% if not user.is_authenticated %}
 					class="hidden hangright"
@@ -76,19 +79,30 @@
 			</div>
 		</div>
 
-		{% block content %}
-		{% endblock %}
-
-
-		<script type = "text/javascript">
-			{% block script %}
+		<div id = "content">
+			{% block content %}
 			{% endblock %}
-		</script>
 
-	</div>
+			<script type = "text/javascript">
+				{% block script %}
+				{% endblock %}
+			</script>
 
-	<div id = "footer">
-		This is in no way associated with the <a id = "homelink" href="http://www.arxiv.org">arXiv</a>.
+		</div>
+
+
+		<div id = "footer">
+			This is in no way associated with the <a id = "homelink" href="http://www.arxiv.org">arXiv</a>.
+		</div>
+
 	</div>
 
 </body>
+
+
+
+
+
+
+
+

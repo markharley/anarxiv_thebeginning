@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from lxml import html
 import requests, json, feedparser, re, urllib2, xmltodict, datetime, time, urllib
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from collections import defaultdict
 
 
 subAnarxivDictionary = {'physics:astro-ph':'Astrophysics', 'physics:cond-mat': 'Condensed Matter', 'physics:gr-qc': 'General Relativity and Quantum Cosmology', 'physics:hep-ex':'High Energy Physics - Experiment',
@@ -44,7 +45,7 @@ def logout(request):
 
 ########################################################################################################################################################################################################
 
-# SUBARXIV VIEWS
+# SUBARXIV VIEWS AND MASS PAPER STORAGE
 
 ########################################################################################################################################################################################################
 
@@ -380,16 +381,33 @@ def specificRequest(request):
 
 ########################################################################################################################################################################################################
 
-# SEARCH AND DISPLAY VIEWS
+# SEARCH VIEWS
 
 ########################################################################################################################################################################################################
 
 
 # creates a dictionary for a single paper from the Inspires search
 def inspiresDisplay(article):
-	paper = {}
+	paper = defaultdict(lambda: None)
 	paper['title'] = article['title']['title']
-	paper['recid'] = article['recid']
+	paper['inspiresnumber'] = article['recid']
+	paper['inspireslink'] = "http://inspirehep.net/record/" + str(article['recid'])
+
+	# Finding the arXiv number associated with the paper
+	if 'primary_report_number' in article:
+		if not isinstance(article['primary_report_number'],list):
+			paper['arxiv_no'] = article['primary_report_number']
+		
+		else:	
+			for entry in article['primary_report_number']:
+				if entry[0:5] == "arXiv":
+					paper['arxiv_no'] = entry	
+
+	
+	if paper['arxiv_no']!= None and '-' in paper['arxiv_no']:	
+		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no']
+	elif paper['arxiv_no']!= None:	
+		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no'][6:]	
 
 	# The arXiv stores more than one abstract so this is the only way I can access it. Should be robust.
 	if 'abstract' in article:
@@ -435,11 +453,15 @@ def inspiresDisplay(article):
 
 
 # Inspires search returns a list of papers
-def InspiresSearch(searchdata):
+def InspiresSearch(searchdata, searchtype):
 	
 	baseurl = "https://inspirehep.net/"
 
-	url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=25&sc=0"
+	if searchtype == "general":
+		url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=25&sc=0"
+	
+	elif searchtype == "specific":
+		url = baseurl +"record/" + searchdata + "?of=recjson&ot=recid,number_of_citations,authors,title"
 	
 	try:
 		r = requests.get(url)
@@ -458,17 +480,22 @@ def InspiresSearch(searchdata):
 	
 # Creates a dictionary for a single paper from an arXiv search
 def arxivDisplay(article):
-	paper = {}
+	paper = defaultdict(lambda: None)
 	paper['title'] = article['title']
-	paper['recid'] = "arxiv:" + article['id'].split("/")[-1]
 
-	# The arXiv stores more than one abstract so this is the only way I can access it. Should be robust.
+	temp = article['id'].split("/")[-1]
+	if 'v' in temp:
+		paper['arxiv_no'] =  "arXiv:" + temp.split('v')[0]
+
+
+	paper['arxivlink'] = article['id']
+
 	if 'summary' in article:
 		paper['abstract'] = article['summary']
 
 	# Gets the journal information
 
-	if 'arxiv:jounral_ref' in article:
+	if 'arxiv:journal_ref' in article:
 		paper['journal_ref'] = article['arxiv:journal_ref']['#text']
 
 
@@ -536,17 +563,23 @@ def arXivSearch(searchdata):
 	else:
 		return []	
 
-
-def InsparXivSearch(searchdata):
+# Combines the results of the two searches which will catch the edge cases which don't appear in both the arXiv and Inspires
+def InsparXivSearch(searchdata, searchtype):
 	A = arXivSearch(searchdata)
-	I = InspiresSearch(searchdata)
+	I = InspiresSearch(searchdata, searchtype)
 
-	titles = [x['title'] for x in A]
+	# Creates a list of arxiv_numbers to allow for easier comparison
+	arXivnums = [x['arxiv_no'] for x in I]
+	titles = [x['title'] for x in I]
+	ReducedList = []
 	
-	L = [x for x in I if x['title'] not in titles]
+	# Creates a new list of inspires results which aren't already in the arXiv results
+	for x in A:
+		if x['arxiv_no'] not in arXivnums:
+			if x['title'] not in titles:
+				ReducedList.append(x)	
 
-	return A+L
-
+	return I + ReducedList
 
 
 # Search engine
@@ -562,9 +595,10 @@ def search(request):
 		# convert the string into a url friendly form
 		urlconverted = urllib.quote_plus(searchinfo)
 		
-		paperList = InspiresSearch(urlconverted)
+		paperList = InspiresSearch(urlconverted, "general")
 
 		for paper in paperList:
+			paper['resultnumber'] = str(paperList.index(paper)+1)
 			renderList.append(str(template.render(paper).encode('utf8')))
 
 		return JsonResponse({'htmlList': renderList})
@@ -573,17 +607,27 @@ def search(request):
 		paperList = arXivSearch(searchinfo)	
 
 		for paper in paperList:
+			paper['resultnumber'] = str(paperList.index(paper)+1)
 			renderList.append(str(template.render(paper).encode('utf8')))
 
 		return JsonResponse({'htmlList': renderList})
 
 
 	if selectedsearch == "InsparXiv":
-		paperList = InsparXivSearch(searchinfo)
+		paperList = InsparXivSearch(searchinfo, "general")
+
 		for paper in paperList:
+			paper['resultnumber'] = str(paperList.index(paper)+1)
 			renderList.append(str(template.render(paper).encode('utf8')))
 
 		return JsonResponse({'htmlList': renderList})
+
+
+########################################################################################################################################################################################################
+
+# DISPLAY VIEWS
+
+########################################################################################################################################################################################################
 
 
 
@@ -647,8 +691,9 @@ def paperStore(paperID, api):
 def paperdisplay(request, paperID):
 
 	# It it has an arxiv prefix we search the newPaper and Paper models for it
-	if paperID[0:6]=="arxiv:":
+	if paperID[0:6]=="arXiv:":
 
+		# This cuts off the version modification to the end of the arXiv number
 		if "v" in paperID[6:]:
 			temp = paperID[6:].split("v")[0]
 
@@ -663,38 +708,51 @@ def paperdisplay(request, paperID):
 		elif Paper.objects.filter(arxiv_no = temp).count() !=0:
 			paperChoice = Paper.objects.get(arxiv_no = temp)
 
-		# otherwise we store it in the paper database	
+		# otherwise we request the info from the arXiv API	
 		else:
-			paperStore(temp, 'arXiv')	
+			paper = arXivSearch(temp)[0]
+			paperChoice = "NONE"
+			
 
 	# in this case the paper if is an inspires number		
 	else:
-		# We store the paper in the Model if it is not already in the model
-		num = Paper.objects.filter(Inspires_no = paperID).count()
+		# if the paper is in newPaper
+		if newPaper.objects.filter(Inspires_no = paperID).count() != 0:
+			paperChoice = newPaper.objects.get(Inspires_no = paperID)
+
+		# if the paper is in Paper	
+		elif Paper.objects.filter(Inspires_no = paperID).count() !=0:
+			paperChoice = Paper.objects.get(Inspires_no = paperID)
+
+		else:
+			paper = InspiresSearch(paperID, "specific")[0]	
+			paperChoice = "NONE"
+
+
+
+	# If the paper was already stored we render it as follows	
+	if paperChoice != "NONE":	
+		# Returns set of authors related to this paper
+		AuthorList = paperChoice.author_set.all()
+
+		allAuthors =""
+
+		for author in AuthorList:
+			allAuthors += author.firstName + " " + author.secondName + ", "
+		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
+		
+		# Prints "et al" for large numbers of authors
+		if len(AuthorList) > 5:		
+			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
+		
+		else: 
+			shortList = allAuthors	
+
+		context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
+
+	else:
+		context = {'title': paper['title'], 'authors':paper['authors'], 'paperID': paper['arxiv_no'] , 'abstract': paper['abstract'], 'journal_ref':paper['journal_ref']}	
 	
-		if num == 0:
-			paperStore(paperID, 'Inspires')
-
-		paperChoice = Paper.objects.get(Inspires_no = paperID)
-
-	# Returns set of authors related to this paper
-	AuthorList = paperChoice.author_set.all()
-
-	allAuthors =""
-
-	for author in AuthorList:
-		allAuthors += author.firstName + " " + author.secondName + ", "
-	allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
-	
-	# Prints "et al" for large numbers of authors
-	if len(AuthorList) > 5:		
-		shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
-	
-	else: 
-		shortList = allAuthors	
-
-	context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
-
 	return render_to_response('paper.html', context)
 
 

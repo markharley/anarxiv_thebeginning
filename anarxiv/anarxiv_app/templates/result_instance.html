@@ -1,10 +1,21 @@
 <div class="masterTooltip" title = "{{ abstract }}">
 
 <div id="result">
-<a href= "/home/result/{{ recid }}/" id = "paperlink">	<p id = "title">{{ title }} </p> </a>
-	<p id = "authors"> {{ authors }} </p> 
-	<a href="http://arxiv.org/abs/{{ arxiv_no}}"> <p> {{ arxiv_no }} </p> </a>
-	<p id = "journal_ref"> {{ journal_ref }} </p>
-	<p id = "no_cites">{{ no_citations }}</p>
-</div>
+
+	<div id = "resultnumber"> {{ resultnumber }} </div>
+
+	<div id = "resultcontent">
+		{% if arxiv_no %}
+			<a href= "/home/result/{{ arxiv_no }}/" id = "paperlink"> <p id = "title"> {{ title }} </p> </a>
+		{% else %}	
+			 </p> <a href= "/home/result/{{ inspiresnumber }}/" id = "paperlink"> <p id = "title"> {{ title }} </p> </a>
+		{% endif %}
+
+			<p id = "authors"> {{ authors }} </p> 
+			<a href = "{{ arxivlink }} "> <p> {{ arxiv_no }} </p> </a>
+			<a href = "{{ inspireslink }} "> <p> {{ inspiresnumber }} </p> </a>
+			<p id = "journal_ref"> {{ journal_ref }} </p>
+			<p id = "no_cites">{{ no_citations }}</p>
+	</div>
+
 </div>

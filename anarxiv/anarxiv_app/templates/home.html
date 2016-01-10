@@ -7,7 +7,7 @@
 
 
 {% block content %}
-<div id = "content">
+
 	<h4> Get the latest papers: </h4>
 
 		<div class="dropdown">
@@ -42,7 +42,7 @@
 		</form>
 
 
-		<div id= "test"> <br> </div>
+		<div id= "searchresults"> <br> </div>
 
 		<div id="spinner" class="spinner" style="display:none;">
 				<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
@@ -50,7 +50,7 @@
 
 		<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
 		<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-</div>
+
 {% endblock %}
 
 {% block script %}
@@ -60,7 +60,7 @@ function Search() {
 	var selectedSearch = $(".form-control option:selected").val();
 
 	$('#searchFail').css("display","none");
-	$('#test').html("");
+	$('#searchresults').html("");
 
 	$("#spinner").css("display", "block");
 
@@ -79,7 +79,7 @@ function Search() {
    			var length = data['htmlList'].length;
 
    			for(var i =0; i < length; i++){
-   				$('#test').append(data['htmlList'][i]);  }
+   				$('#searchresults').append(data['htmlList'][i]);  }
     	},
 
     	error: function(jqXHR, textStatus, errorThrown) {
