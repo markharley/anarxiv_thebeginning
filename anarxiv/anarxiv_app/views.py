@@ -428,26 +428,39 @@ def inspiresDisplay(article):
 				journal_ref += info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
 			
 			paper['journal_ref'] = journal_ref
+		else:
+			paper['journal_ref'] = "No publication data."	
+	else:
+		paper['journal_ref'] = "No publication data."		
 
 	
 	length = len(article['authors'])
 
 	Authors = ""
+	shortList = ""
 	
 
 	for j in range(length):
-		Authors += (article['authors'][j]['first_name']) + " " +(article['authors'][j]['last_name']) 
+		shortList += (article['authors'][j]['first_name']) + " " +(article['authors'][j]['last_name']) 
 		if length > 5:
-			Authors += ' et al.'
+			shortList += ' et al.'
 			break
 		if j==length-1:
-			Authors += '.'
+			shortList += '.'
 		else:
-			Authors += ', '	
+			shortList += ', '	
+
+	for j in range(length):
+		Authors+= (article['authors'][j]['first_name']) + " " +(article['authors'][j]['last_name']) 
+		if j==length-1:
+			Authors+= '.'
+		else:
+			Authors+= ', '			
 
 	
 	paper['authors'] = Authors
-	paper['no_citations'] = article['number_of_citations']		
+	paper['shortList'] = shortList
+	paper['no_citations'] = "Citations: " + str(article['number_of_citations'])	
 
 	return paper	
 
@@ -498,6 +511,9 @@ def arxivDisplay(article):
 	if 'arxiv:journal_ref' in article:
 		paper['journal_ref'] = article['arxiv:journal_ref']['#text']
 
+	else:
+		paper['journal_ref'] = "No publication data."	
+
 
 	# in the case of a single author we need to insert it into a list to then manipulate	
 	if isinstance(article['author'],list) == False:
@@ -509,19 +525,28 @@ def arxivDisplay(article):
 	length = len(authorlist)
 
 	Authors = ""
+	ShortList = ""
 	
 	for j in range(length):
 		Authors += (authorlist[j]['name']) + " "  
-		if length > 5:
-			Authors += ' et al.'
-			break
 		if j==length-1:
 			Authors += '.'
 		else:
 			Authors += ', '	
 
-	
-	paper['authors'] = Authors	
+	for j in range(length):
+		ShortList += (authorlist[j]['name']) + " "  
+		if length > 5:
+			ShortList += ' et al.'
+			break
+		if j==length-1:
+			ShortList += '.'
+		else:
+			ShortList += ', '	
+
+
+	paper['authors'] = Authors
+	paper['shortList'] = ShortList	
 
 	return paper	
 
@@ -751,7 +776,7 @@ def paperdisplay(request, paperID):
 		context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
 
 	else:
-		context = {'title': paper['title'], 'authors':paper['authors'], 'paperID': paper['arxiv_no'] , 'abstract': paper['abstract'], 'journal_ref':paper['journal_ref']}	
+		context = {'title': paper['title'], 'authors':paper['authors'], 'shortList':paper['shortList'], 'paperID': paper['arxiv_no'] , 'abstract': paper['abstract'], 'journal_ref':paper['journal_ref']}	
 	
 	return render_to_response('paper.html', context)
 

@@ -36,6 +36,7 @@
 
 			var x = 2;
 			$("#Authors").click( function(){
+				console.log("hi");
 		
 				if(x%2==0){
     				$("#test").css("display", "block");
@@ -60,7 +61,7 @@
 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagerequest/",
-		           	data: {'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }}},
+		           	data: {'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }} },
 		           	datatype: "JSON",
 
 		           	success: function(data){	
@@ -89,7 +90,7 @@
 		 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagesubmission/",
-		           	data: {'message':message, 'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }}},
+		           	data: {'message':message, 'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }} },
 		           	datatype: "JSON",
 
 
@@ -103,6 +104,7 @@
 			         	});
 
 					};
+
 
 
 {% endblock %}

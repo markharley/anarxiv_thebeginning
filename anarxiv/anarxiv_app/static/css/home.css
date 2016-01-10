@@ -132,6 +132,7 @@ p {
     float:left;
     width: 20px;
     height:100%;
+    text-align:left;
     font-weight: bold;
 
 }

@@ -67,6 +67,11 @@ function Search() {
 
 	var x = document.getElementById("searchinfo").value;
 
+		if(x == "Mark Harley"){
+			alert("Mark have you published yet?");
+		}
+
+
 		$.ajax({
  		type: "POST",
    		url: "../home/search/",
