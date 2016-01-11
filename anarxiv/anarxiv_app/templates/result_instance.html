@@ -12,8 +12,8 @@
 		{% endif %}
 
 			<p id = "authors"> {{ shortList }} </p> 
-			<a href = "{{ arxivlink }} "> {{ arxiv_no }}  </a>
-			<a href = "{{ inspireslink }} ">  {{ inspiresnumber }}  </a>
+			<a href = "{{ arxivlink }} "> {{ arxiv_no|default_if_none:"" }}  </a>
+			<a href = "{{ inspireslink }} ">  {{ inspiresnumber|default_if_none:"" }}  </a>
 			<p id = "journal_ref"> {{ journal_ref }} </p>
 			<p id = "no_cites"> {{ no_citations }}</p>
 	</div>

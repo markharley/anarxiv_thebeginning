@@ -179,49 +179,64 @@ def getDailyPapers():
 		else:
 			break
 
-# def thisDaysPapers():
-# 	NoDays = 0
-# 	thisDay = datetime.date.today()
-# 	oneDay = datetime.timedelta(days=1)
-# 	date = thisDay - oneDay*NoDays
+# This function takes the paperID, performs the search and stores the paper in the Model
+def paperStore(paperID, api):
+	
+	if api == "Inspires":
+		url = "https://inspirehep.net/record/"+str(paperID)+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info,primary_report_number"
+	
+	elif api == "arXiv":
+		url = "https://inspirehep.net/search?ln=en&p="+str(paperID)+"&of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info,primary_report_number"
 
-# 	# requesting and accessing paper data
-# 	baseurl = 'http://export.arxiv.org/oai2?verb=ListRecords'
-# 	url = baseurl + '&metadataPrefix=arXiv&from=' + str(date)
+	r = requests.get(url).json()[0]
+	title = r['title']['title']	
+	Inspires_no = r['recid']
+	
+	if isinstance(r['primary_report_number'],list):
+		arxiv_no = r['primary_report_number'][0]
+	else:
+		arxiv_no = r['primary_report_number']	
 
-# 	while True:
+	# The format the abstracts come in is non standard, this seems to pick up the cases well enough....
+	if 'abstract' in r:
+		if isinstance(r['abstract'], list):
+			abstract = r['abstract'][0]['summary']
+		else:
+			abstract = r['abstract']['summary']
+	else:
+		abstract = "No abstract"	
 
-# 		try: 
-# 			urlfile = urllib2.urlopen(url)
-		
-# 		# if this request fails we wait for 30s before rerequesting
-# 		except urllib2.HTTPError, e:
-# 			if e.code == 503:
-# 				to = int(e.hdrs.get("retry-after", 30))
+	# Create the journal ref
+	info = r['publication_info']
+	if info != None:
+		journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
+	else:
+		journal_ref = None
 
-# 				time.sleep(to)
-# 				continue
-			   
-# 			else:
-# 				raise		
+	# Save the paper to the database
+	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no, journal = journal_ref, arxiv_no = arxiv_no)
+	paperObj.save()	
 
+	# Adds the authors to the database ad links them to the paper
+	length = len(r['authors'])
 
-# 		data = urlfile.read()
-# 		urlfile.close()
-# 		data = xmltodict.parse(data)
-# 		papers = data['OAI-PMH']['ListRecords']['record']
+	for i in range(length):
+		PaperObj = Paper.objects.get(Inspires_no = Inspires_no)
 
-# 		# Iterating over the papers 
-# 		for paper in papers:
-# 			newPaperStore(paper)
+		# Checks to see if the Author is already in the database (use unique id in future)
+		if Author.objects.filter(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name']).count() == 0:
+			
+			temp = Author(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name'] )
+			temp.save()
+			temp.articles.add(PaperObj)
+			
+		# Adds the paper to the Author
+		else:
+			temp = Author.objects.get(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name'])
+			temp.articles.add(PaperObj)	
 
-# 		# Gets the resumptionToken if it exists and adjusts the url accordingly	
-# 		if 'resumptionToken' in data['OAI-PMH']['ListRecords'] and '#text' in data['OAI-PMH']['ListRecords']['resumptionToken']:
-# 			resumptionToken = data['OAI-PMH']['ListRecords']['resumptionToken']['#text']
-# 			url = baseurl + '&resumptionToken=' + resumptionToken 
+	return paperObj									
 
-# 		else:
-# 			break	 
 
 def updatePapers():
 	NoDays = 4
@@ -295,7 +310,7 @@ def dailyPaperDisplay(request):
 		else: 
 			shortList = allAuthors	
 
-		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'recid' : 'arxiv:'+ paper.arxiv_no, 'subanarxiv':subanarxiv, 'arxiv_no': paper.arxiv_no, 'new': paper.new}
+		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'recid' : 'arXiv:'+ paper.arxiv_no, 'subanarxiv':subanarxiv, 'arxiv_no': 'arXiv:' + paper.arxiv_no, 'new': paper.new}
 	
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if paper.new == 'no':
@@ -367,7 +382,7 @@ def specificRequest(request):
 			ListToUse = AuthorList	
 
 
-		context = {'title': title, 'authors': ListToUse, 'arxiv_no': arxiv_no}	
+		context = {'title': title, 'authors': ListToUse, 'arxiv_no': arxiv_no, 'shortList': ShortList}	
 
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if 'updated' in article:
@@ -396,18 +411,19 @@ def inspiresDisplay(article):
 	# Finding the arXiv number associated with the paper
 	if 'primary_report_number' in article:
 		if not isinstance(article['primary_report_number'],list):
-			paper['arxiv_no'] = article['primary_report_number']
+			paper['arxiv_no'] = article['primary_report_number'][6:]
 		
 		else:	
 			for entry in article['primary_report_number']:
 				if entry[0:5] == "arXiv":
-					paper['arxiv_no'] = entry	
+					paper['arxiv_no'] = entry[6:]	
+			
 
 	
 	if paper['arxiv_no']!= None and '-' in paper['arxiv_no']:	
 		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no']
 	elif paper['arxiv_no']!= None:	
-		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no'][6:]	
+		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no'][6:]		
 
 	# The arXiv stores more than one abstract so this is the only way I can access it. Should be robust.
 	if 'abstract' in article:
@@ -528,22 +544,14 @@ def arxivDisplay(article):
 	ShortList = ""
 	
 	for j in range(length):
-		Authors += (authorlist[j]['name']) + " "  
-		if j==length-1:
-			Authors += '.'
-		else:
-			Authors += ', '	
+		Authors += (authorlist[j]['name']) + ", "  
+	
+	Authors = Authors[:-2]+"."
 
-	for j in range(length):
-		ShortList += (authorlist[j]['name']) + " "  
-		if length > 5:
-			ShortList += ' et al.'
-			break
-		if j==length-1:
-			ShortList += '.'
-		else:
-			ShortList += ', '	
-
+	if length>5:
+		ShortList += authorlist[0]['name'] + ' et al.'
+	else:
+		ShortList = Authors	
 
 	paper['authors'] = Authors
 	paper['shortList'] = ShortList	
@@ -656,62 +664,6 @@ def search(request):
 
 
 
-# This function takes the paperID, performs the search and stores the paper in the Model
-def paperStore(paperID, api):
-	
-	if api == "Inspires":
-		url = "https://inspirehep.net/record/"+str(paperID)+"?of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info,primary_report_number"
-	
-	elif api == "arXiv":
-		url = "https://inspirehep.net/search?ln=en&p="+str(paperID)+"&of=recjson&ot=recid,number_of_citations,authors,title,abstract,publication_info,primary_report_number"
-
-	r = requests.get(url).json()[0]
-	title = r['title']['title']	
-	Inspires_no = r['recid']
-	
-	if isinstance(r['primary_report_number'],list):
-		arxiv_no = r['primary_report_number'][0]
-	else:
-		arxiv_no = r['primary_report_number']	
-
-	# The format the abstracts come in is non standard, this seems to pick up the cases well enough....
-	if 'abstract' in r:
-		if isinstance(r['abstract'], list):
-			abstract = r['abstract'][0]['summary']
-		else:
-			abstract = r['abstract']['summary']
-	else:
-		abstract = "No abstract"	
-
-	# Create the journal ref
-	info = r['publication_info']
-	if info != None:
-		journal_ref = info['title'] + info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
-	else:
-		journal_ref = None
-
-	# Save the paper to the database
-	paperObj = Paper(title = title, abstract = abstract, Inspires_no = Inspires_no, journal = journal_ref, arxiv_no = arxiv_no)
-	paperObj.save()	
-
-	# Adds the authors to the database ad links them to the paper
-	length = len(r['authors'])
-
-	for i in range(length):
-		PaperObj = Paper.objects.get(Inspires_no = Inspires_no)
-
-		# Checks to see if the Author is already in the database (use unique id in future)
-		if Author.objects.filter(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name']).count() == 0:
-			
-			temp = Author(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name'] )
-			temp.save()
-			temp.articles.add(PaperObj)
-			
-		# Adds the paper to the Author
-		else:
-			temp = Author.objects.get(firstName = r['authors'][i]['first_name'], secondName = r['authors'][i]['last_name'])
-			temp.articles.add(PaperObj)	
-				
 # This creates the single paper page for both arxiv and inspires papers
 def paperdisplay(request, paperID):
 
@@ -754,7 +706,6 @@ def paperdisplay(request, paperID):
 			paperChoice = "NONE"
 
 
-
 	# If the paper was already stored we render it as follows	
 	if paperChoice != "NONE":	
 		# Returns set of authors related to this paper
@@ -776,7 +727,7 @@ def paperdisplay(request, paperID):
 		context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
 
 	else:
-		context = {'title': paper['title'], 'authors':paper['authors'], 'shortList':paper['shortList'], 'paperID': paper['arxiv_no'] , 'abstract': paper['abstract'], 'journal_ref':paper['journal_ref']}	
+		context = {'title': paper['title'], 'authors':paper['authors'], 'shortList':paper['shortList'], 'paperID': paper['inspiresnumber'] , 'abstract': paper['abstract'], 'journal_ref':paper['journal_ref'],'arxivno': paper['arxiv_no']}	
 	
 	return render_to_response('paper.html', context)
 
@@ -793,17 +744,42 @@ def paperdisplay(request, paperID):
 def messageSubmission(request):
 	message = request.POST['message']     
 	message_id = request.POST['id']
-	arxiv_no = request.POST['arxivno']
+	arxivno = request.POST['arxivno']
 
-	# If the paper does not have an inspires id, then it is in the temperary db
-	if message_id == '0':
-		paper = newPaper.objects.get(arxiv_no = arxiv_no)
-		post = Post(message = message, new_paper = paper)
-	# Otherwise we look for it in the permanent db
-	else:
-		paper = Paper.objects.get(Inspires_no = message_id)
-		post = Post(message = message, paper = paper)
+
+	# If the paper has an arXiv number
+	if arxivno != '0':
+
+		# We check the newPaper and Paper databases
+		if newPaper.objects.filter(arxiv_no = arxivno).count() != 0:
+			paper = newPaper.objects.get(arxiv_no = arxivno)
+			post = Post(message = message, new_paper = paper)
+		
+		elif Paper.objects.filter(arxiv_no = arxivno).count() != 0:
+			paper = Paper.objects.get(arxiv_no = arxivno)
+			post = Post(message = message, paper = paper)
+
+		# Else we create the paper object	
+		else:
+			p = arXivSearch(arxivno[6:])[0]
+			paper = Paper(p['title'], p['abstract'], p['arxiv_no'])
+			paper.save()
+			post = Post(message = message, paper = paper)
+
 	
+	# If the paper does not have an arXiv number	
+	else:
+		# We just have to look for the paper in the Paper database
+		if Paper.objects.filter(Inspires_no = message_id).count() == 1:
+			paper = Paper.objects.get(Inspires_no = message_id)
+			post = Post(message = message, paper = paper)
+
+		# Else we create the paper object	
+		else:
+			temp = paperStore(message_id, "Inspires")
+			post = Post(message = message, paper = temp)
+	
+
 	post.save()
 
 	context = {'message': post.message, 'time': post.date}
@@ -814,32 +790,45 @@ def messageSubmission(request):
 	return JsonResponse({'messageHTML': temp})
 
 
-# This returns a JSON of all previous messages for the paper we are looking at
+# This returns a JSON of all rendered previous messages for the paper we are looking at
 @csrf_exempt
 def getMessages(request):
 	message_id = request.POST['id']
 	arxiv_no = request.POST['arxivno']
-
-	# If the paper does not have an inspires id, then it is in the temperary db
-	if message_id == '0':
-		article = newPaper.objects.get(arxiv_no = arxiv_no)
-	# Otherwise we look for it in the permanent db
-	else:
-		article = Paper.objects.get(Inspires_no = str(message_id))
-
-	posts = article.post_set.all()
-
-
-	template = loader.get_template("message.html")
 	renderList = []
+	template = loader.get_template("message.html")
 
-	for comment in posts:
-		context = {'message': comment.message, 'time': comment.date}
-		renderList.append(str(template.render(context).encode('utf8')))
+	# If the paper has an arXiv number we search for it in the databases
+	if arxiv_no != '0':
 		
+		if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 1:
+			article = newPaper.objects.get(arxiv_no = arxiv_no)
+		
+		elif Paper.objects.filter(arxiv_no = arxiv_no).count() == 1:
+			article = Paper.objects.get(arxiv_no = arxiv_no)	
+
+		else:
+			article = "NONE"	
+
+	# If the paper has an Inspires number but no arXiv number so we only check the Paper database
+	else:
+
+		if Paper.objects.filter(Inspires_no = str(message_id)).count() ==1:
+			article = Paper.objects.get(Inspires_no = str(message_id))
+		else:
+			article = "NONE"		
+
+
+	if article != "NONE":		
+		posts = article.post_set.all()	
+
+		for comment in posts:
+			context = {'message': comment.message, 'time': comment.date}
+			renderList.append(str(template.render(context).encode('utf8')))
+			
+
 
 	return JsonResponse({'messageHTML': renderList})
-
 
 
 

@@ -5,30 +5,47 @@
 {% block content %}
 
 	<div id = "content">
+	
+
+	<div id = "paperdetails">
 		<h2> {{ title }} </h2>
-		
-		<div id = "Authors">
-		<h3 id = "ExtendAuthors"> {{ shortList }} </h3>
-		<h3 id = "test" style="display:none;"> {{ authors }} </h3>
-		<h3> {{ journal_ref|default_if_none:"" }} </h3>
-		{% if paperID %}
-			<a href= "https://inspirehep.net/record/{{ paperID }}"><p> Inspires </p> </a>
-		{% endif %}
-		
-		{% if arxivno %}
-			<a href= "http://arxiv.org/abs/{{ arxivno }}"><p> arXiv </p> </a>
-		{% endif %}
+				
+				<div id = "Authors">
+				<h3 id = "ExtendAuthors"> {{ shortList }} </h3>
+				<h3 id = "test" style="display:none;"> {{ authors }} </h3>
+				<h3> {{ journal_ref|default_if_none:"" }} </h3>
+				{% if paperID %}
+					<a href= "https://inspirehep.net/record/{{ paperID }}"><p> Inspires </p> </a>
+				{% endif %}
+				
+				{% if arxivno %}
+					<a href= "http://arxiv.org/abs/{{ arxivno }}"><p> arXiv </p> </a>
+				{% endif %}
 
-		</div>
-		
-		<div> {{ abstract }} <div>
-		
-		
-		<textarea rows="4" cols="50"id="messageBox"> Type a message here! </textarea> <br>
-		<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+				</div>
 
-		<div id = "messageApend"> </div>
+				<div> {{ abstract }} </div>
+				
+				
+				<textarea rows="4" cols="50" id="messageBox"> Type a message here! </textarea> <br>
+				<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+
+				<div id = "messageApend"> </div>
 	</div>	
+
+
+			<div id = "pdfview" >
+				<iframe src= "http://arxiv.org/pdf/{{arxivno}}.pdf" id = "pdfframe"> </iframe>
+			</div>
+		
+
+	</div>
+
+
+
+
+
+
 {% endblock %}
 
 
@@ -61,7 +78,7 @@
 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagerequest/",
-		           	data: {'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }} },
+		           	data: {'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
 		           	datatype: "JSON",
 
 		           	success: function(data){	
@@ -90,7 +107,7 @@
 		 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagesubmission/",
-		           	data: {'message':message, 'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }} },
+		           	data: {'message':message, 'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
 		           	datatype: "JSON",
 
 
