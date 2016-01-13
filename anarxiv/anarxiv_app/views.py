@@ -522,8 +522,13 @@ def arXivSearch(searchdata,start):
 
 	searchdata = searchdata.replace(" ","+AND+")
 
+	if start != "":
+		initresult = "&start="+ str(start)
+	else:
+		initresult = ""	
+
 	baseurl = "http://export.arxiv.org/api/" 
-	url = baseurl + "query?search_query=all:" + searchdata + "&start="+ str(start)+"&max_results=50&sortBy=lastUpdatedDate&sortOrder=descending"
+	url = baseurl + "query?search_query=all:" + searchdata + initresult+"&max_results=50&sortBy=lastUpdatedDate&sortOrder=descending"
 	urlfile = urllib2.urlopen(url)
 	data = urlfile.read()
 	urlfile.close()
@@ -557,7 +562,7 @@ def arXivSearch(searchdata,start):
 
 # Combines the results of the two searches which will catch the edge cases which don't appear in both the arXiv and Inspires
 def InsparXivSearch(searchdata, searchtype):
-	A = arXivSearch(searchdata)['paperList']
+	A = arXivSearch(searchdata,"")['paperList']
 	I = InspiresSearch(searchdata, searchtype)
 
 	# Creates a list of arxiv_numbers to allow for easier comparison
@@ -652,7 +657,7 @@ def paperdisplay(request, paperID):
 
 		# otherwise we request the info from the arXiv API	
 		else:
-			paper = arXivSearch(temp)[0]
+			paper = arXivSearch(temp,"")['paperList'][0]
 			paperChoice = "NONE"
 			
 
@@ -728,7 +733,7 @@ def messageSubmission(request):
 
 		# Else we create the paper object	
 		else:
-			p = arXivSearch(arxivno)[0]
+			p = arXivSearch(arxivno,"")[0]
 			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'])
 			paper.save()
 			post = Post(message = message, paper = paper)
