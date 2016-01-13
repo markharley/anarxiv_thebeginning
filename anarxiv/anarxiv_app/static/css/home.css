@@ -116,6 +116,7 @@ p {
 
 #authors{
     color: black;
+    font-size: 16;
 }
 
 #authors a{
@@ -139,6 +140,13 @@ p {
     background-color: rgba(0,0,255,0.1);
 }
 
+.pagenumber {
+    margin-right: 3px;
+}
+
+.pagenumber:hover{
+    color: rgb(0,0,255);
+}
 
 #resultnumber{
     font-size:20px Arial;
@@ -158,6 +166,11 @@ p {
 #title{
     font-weight: bold;
  }
+
+
+#journalref{
+    font-size: 12;
+}
 
 #paperlink {
       text-decoration:none;

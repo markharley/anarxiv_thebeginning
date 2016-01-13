@@ -12,6 +12,8 @@ urlpatterns = [
 	# Inspires search 
 	url(r'^search/$', views.search, name='search'),
 
+	url(r'^author/(?P<authorID>[a-zA-Z0-9._%:-]+)$', views.authorPage),
+
 
 	# Links to single paper views
 	url(r'^result/(?P<paperID>[a-zA-Z0-9._:-]+)/$', views.paperdisplay, name='paperdisplay'),

@@ -32,7 +32,7 @@
 
 
 
-				<h3> {{ journal_ref|default_if_none:"" }} </h3>
+				<h3 id = "journalref"> {{ journal_ref|default_if_none:"" }} </h3>
 				
 				{% if paperID %}
 					<a href= "https://inspirehep.net/record/{{ paperID }}"><p> Inspires: {{paperID}} </p> </a>
@@ -107,7 +107,6 @@
 		           	datatype: "JSON",
 
 		           	success: function(data){	
-		           	console.log("hi");
 
 
 		           		var length = data['messageHTML'].length;
@@ -137,7 +136,7 @@
 
 
 		           	success: function(data) {
-		           		console.log("hi");
+		         
 		          
 	           			$('#messageApend').append(data['messageHTML']);
 

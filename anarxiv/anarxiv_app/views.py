@@ -4,7 +4,7 @@ from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-import requests, json, feedparser, re, urllib2, xmltodict, datetime, time, urllib
+import requests, json, feedparser, re, urllib2, xmltodict, datetime, time, urllib, calendar
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from collections import defaultdict
 
@@ -367,8 +367,14 @@ def specificRequest(request):
 def subanarxiv(request,area):
 	thisDay = datetime.date.today()
 	one_day = datetime.timedelta(days=1)
-	FiveDays = [str(thisDay - x*one_day) for x in range(5)]
-	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, "DATE": FiveDays}
+	Days = []
+	
+	for x in range(5):
+		Day = {'DayName': calendar.day_name[(thisDay - x*one_day).weekday()], 'Date': str(thisDay - x*one_day) }
+		Days.append(Day)
+
+
+	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, 'Dates': Days}
 	return render(request,'subanarxiv.html', context)
 
 ########################################################################################################################################################################################################
@@ -512,12 +518,12 @@ def arxivDisplay(article):
 
 
 # arXiv search returns a list of papers
-def arXivSearch(searchdata):
+def arXivSearch(searchdata,start):
 
 	searchdata = searchdata.replace(" ","+AND+")
 
 	baseurl = "http://export.arxiv.org/api/" 
-	url = baseurl + "query?search_query=all:" + searchdata + "&start=0&max_results=50&sortBy=lastUpdatedDate&sortOrder=descending"
+	url = baseurl + "query?search_query=all:" + searchdata + "&start="+ str(start)+"&max_results=50&sortBy=lastUpdatedDate&sortOrder=descending"
 	urlfile = urllib2.urlopen(url)
 	data = urlfile.read()
 	urlfile.close()
@@ -526,8 +532,9 @@ def arXivSearch(searchdata):
 	# this is the list of papers
 	if 'entry' in data['feed']:
 		papers = data['feed']['entry']
-		totalResults = data['feed']['opensearch:totalResults']
-		
+		totalResults = data['feed']['opensearch:totalResults']['#text']
+		startIndex = data['feed']['opensearch:startIndex']['#text']
+
 		if isinstance(papers,list) == False:
 			articles = []
 			articles.append(papers)
@@ -543,14 +550,14 @@ def arXivSearch(searchdata):
 			paperList.append(arxivDisplay(article))
 
 
-		return paperList	
+		return {'totalResults':totalResults, 'startIndex': startIndex, 'paperList': paperList}
 		
 	else:
-		return []	
+		return {}	
 
 # Combines the results of the two searches which will catch the edge cases which don't appear in both the arXiv and Inspires
 def InsparXivSearch(searchdata, searchtype):
-	A = arXivSearch(searchdata)
+	A = arXivSearch(searchdata)['paperList']
 	I = InspiresSearch(searchdata, searchtype)
 
 	# Creates a list of arxiv_numbers to allow for easier comparison
@@ -574,6 +581,9 @@ def search(request):
 	selectedsearch = request.POST['search']
 	template = loader.get_template("result_instance.html")
 	renderList = []
+
+	start = int(request.POST['index'])*50
+
 	
 
 	if selectedsearch == "Inspires":
@@ -589,13 +599,16 @@ def search(request):
 		return JsonResponse({'htmlList': renderList})
 
 	if selectedsearch == "arXiv":
-		paperList = arXivSearch(searchinfo)	
+		temp = arXivSearch(searchinfo, start)
+		paperList = temp['paperList']
+		numResults = temp['totalResults']
+		startIndex = temp['startIndex']
 
 		for paper in paperList:
-			paper['resultnumber'] = str(paperList.index(paper)+1)
+			paper['resultnumber'] = str(paperList.index(paper)+start+1) 
 			renderList.append(str(template.render(paper).encode('utf8')))
 
-		return JsonResponse({'htmlList': renderList})
+		return JsonResponse({'htmlList': renderList, 'totalResults':numResults, 'startIndex': startIndex})
 
 
 	if selectedsearch == "InsparXiv":
@@ -667,7 +680,7 @@ def paperdisplay(request, paperID):
 			temp2 = {'firstName':x.firstName, 'secondName':x.secondName}
 			AuthorList.append(temp2)
 
-		temp = "http://arxiv.org/pdf/" + paperChoice.arxiv_no + ".pdf" 	
+		temp = "http://arxiv.org/pdf/" + str(paperChoice.arxiv_no) + ".pdf" 	
 
 		context = {'title': paperChoice.title, 'authorlist': AuthorList,  'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 
 					'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no, 'pdflink': temp}
@@ -715,8 +728,8 @@ def messageSubmission(request):
 
 		# Else we create the paper object	
 		else:
-			p = arXivSearch(arxivno[6:])[0]
-			paper = Paper(p['title'], p['abstract'], p['arxiv_no'])
+			p = arXivSearch(arxivno)[0]
+			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'])
 			paper.save()
 			post = Post(message = message, paper = paper)
 
@@ -788,11 +801,8 @@ def getMessages(request):
 
 
 
-
-
-
- 
-
+def authorPage():
+	pass
 
 
 

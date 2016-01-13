@@ -8,12 +8,11 @@
 {% block content %}
 	<h1> {{ SECTION  }} </h1>
 
-	<button type="button" class="btn btn-default" id = "{{ DATE.0 }}" onclick="getRecent(this.id)"> {{ DATE.0 }}</button>
-	<button type="button" class="btn btn-default" id = "{{ DATE.1 }}" onclick="getRecent(this.id)"> {{ DATE.1 }}</button>
-	<button type="button" class="btn btn-default" id = "{{ DATE.2 }}" onclick="getRecent(this.id)"> {{ DATE.2 }}</button>
-	<button type="button" class="btn btn-default" id = "{{ DATE.3 }}" onclick="getRecent(this.id)"> {{ DATE.3 }}</button>
-	<button type="button" class="btn btn-default" id = "{{ DATE.4 }}" onclick="getRecent(this.id)"> {{ DATE.4 }}</button>
+	{% for x in Dates %}
+		<button type="button" class="btn btn-default" id = "{{ x.Date }}" onclick="getRecent(this.id)"> {{ x.DayName }} </br> ( {{x.Date}} ) </button>
+	{% endfor %}
 
+	<h6> Search for results from a specific date </h6>
 	<input type="text" id="searchdate">
 	<button class="btn btn-primary" type="button" onclick="search()" id = "searchButton">Search</button>
 
