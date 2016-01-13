@@ -667,9 +667,10 @@ def paperdisplay(request, paperID):
 			temp2 = {'firstName':x.firstName, 'secondName':x.secondName}
 			AuthorList.append(temp2)
 
+		temp = "http://arxiv.org/pdf/" + paperChoice.arxiv_no + ".pdf" 	
 
 		context = {'title': paperChoice.title, 'authorlist': AuthorList,  'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 
-					'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
+					'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no, 'pdflink': temp}
 
 	else:
 		if paper['arxiv_no'] != None:
