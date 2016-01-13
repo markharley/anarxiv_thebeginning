@@ -5,46 +5,89 @@
 {% block content %}
 
 	<div id = "content">
+	
+
+	<div id = "paperdetails">
 		<h2> {{ title }} </h2>
-		
-		<div id = "Authors">
-		<h3 id = "ExtendAuthors"> {{ shortList }} </h3>
-		<h3 id = "test" style="display:none;"> {{ authors }} </h3>
-		<h3> {{ journal_ref|default_if_none:"" }} </h3>
-		{% if paperID %}
-			<a href= "https://inspirehep.net/record/{{ paperID }}"><p> Inspires </p> </a>
-		{% endif %}
-		
-		{% if arxivno %}
-			<a href= "http://arxiv.org/abs/{{ arxivno }}"><p> arXiv </p> </a>
-		{% endif %}
+				<div id = "Authors">
 
-		</div>
-		
-		<div> {{ abstract }} <div>
-		
-		
-		<textarea rows="4" cols="50"id="messageBox"> Type a message here! </textarea> <br>
-		<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+				{% if authorlist|length > 10 %}
+					<div id = "shortlist">
+						<a href = "/home/" > {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> <span id = "etal"> et al.</span>
+					</div>
+					<div id = "fulllist" style="display:none;">
+						{% for author in authorlist %}
+						<a href = "/home/">  {{ author.firstName}}   {{ author.secondName }}  </a>
+						{% endfor %}
+					</div>	
 
-		<div id = "messageApend"> </div>
+				{% else %}		
+					{% for author in authorlist %}
+						<a href = "/home/">  {{ author.firstName}}   {{ author.secondName }}  </a>
+					{% endfor %}
+				{% endif %}	
+
+				</div>
+				
+
+
+
+				<h3> {{ journal_ref|default_if_none:"" }} </h3>
+				
+				{% if paperID %}
+					<a href= "https://inspirehep.net/record/{{ paperID }}"><p> Inspires: {{paperID}} </p> </a>
+				{% endif %}
+				
+				{% if arxivno %}
+					<a href= "http://arxiv.org/abs/{{ arxivno }}"><p> arXiv: {{arxivno}} </p> </a>
+				{% endif %}
+
+
+				<div> {{ abstract }} </div>
+				
+				
+				<textarea rows="4" cols="50" id="messageBox"> Type a message here! </textarea> <br>
+				<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+
+				<div id = "messageApend"> </div>
 	</div>	
+
+
+			<div id = "pdfview" >
+					{% if paper.pdflink != "NOLINK" %}
+						<iframe src= "{{ pdflink }}" id = "pdfframe"> </iframe>
+					{% else %}	
+						<p> NO PDF AVAILABLE </p>
+					{% endif %}	
+
+			
+			</div>
+			
+		
+
+	</div>
+
+
+
+
+
+
 {% endblock %}
 
 
 {% block script %}
 
 			var x = 2;
-			$("#Authors").click( function(){
+			$("#etal").click( function(){
 		
 				if(x%2==0){
-    				$("#test").css("display", "block");
-    				$("#ExtendAuthors").css("display", "none");
+    				$("#fulllist").css("display", "block");
+    				$("#shortlist").css("display", "none");
     				x+=1
     			}
     			else{
-    				$("#test").css("display", "none");
-    				$("#ExtendAuthors").css("display", "block");
+    				$("#fullist").css("display", "none");
+    				$("#shortlist").css("display", "block");
     				x+=1;
 
     			}
@@ -60,7 +103,7 @@
 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagerequest/",
-		           	data: {'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }}},
+		           	data: {'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
 		           	datatype: "JSON",
 
 		           	success: function(data){	
@@ -89,7 +132,7 @@
 		 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagesubmission/",
-		           	data: {'message':message, 'id': {{ paperID|default_if_none:0}}, 'arxivno': {{ arxivno|default_if_none:0 }}},
+		           	data: {'message':message, 'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
 		           	datatype: "JSON",
 
 
@@ -103,6 +146,7 @@
 			         	});
 
 					};
+
 
 
 {% endblock %}

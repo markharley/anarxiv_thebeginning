@@ -9,7 +9,7 @@ urlpatterns = [
 
 	url(r'^result/messagerequest/$', views.getMessages, name='getMessages'),
 
-	# Search submissions, storage and requests
+	# Inspires search 
 	url(r'^search/$', views.search, name='search'),
 
 

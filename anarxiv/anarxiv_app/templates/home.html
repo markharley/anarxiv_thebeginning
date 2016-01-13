@@ -7,7 +7,7 @@
 
 
 {% block content %}
-<div id = "content">
+
 	<h4> Get the latest papers: </h4>
 
 		<div class="dropdown">
@@ -22,11 +22,27 @@
 
 	<h4> Search the arXiv and inspires: </h4>	
 
-		<input type="text" id="surname" value="bartrum">
-		<button type="button" onclick="searchButtonClicked()" id = "searchButton">Search</button>
-		<div> Summarise the search parameters the search accepts here... at the moment the search accepts firstnames and surnames</div>
+		<form class="form-inline" role="form">
+			<div class="form-group">
+				<input type="text" id="searchinfo" value="bartrum">
+			</div>
+			
+			<div class="form-group">	
+			<select class="form-control">
+			    <option value="Inspires">Inspires</option>
+			    <option value="arXiv">arXiv</option>
+			    <option value="InsparXiv" selected>InsparXiv</option>
+			</select>
+			</div>
 
-		<div id= "test"> <br> </div>
+			<div class="form-group">
+				<button class="btn btn-primary" type="button" onclick="Search()" id = "searchButton">Search</button>
+			</div>
+			<div> Summarise the search parameters the search accepts here... at the moment the search accepts firstnames and surnames</div>
+		</form>
+
+
+		<div id= "searchresults"> <br> </div>
 
 		<div id="spinner" class="spinner" style="display:none;">
 				<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
@@ -34,21 +50,32 @@
 
 		<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
 		<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-</div>
+
 {% endblock %}
 
 {% block script %}
-function searchButtonClicked() {
+
+function Search() {
+	
+	var selectedSearch = $(".form-control option:selected").val();
+
 	$('#searchFail').css("display","none");
-	$('#test').html("");
+	$('#searchresults').html("");
 
 	$("#spinner").css("display", "block");
 
-	var x = document.getElementById("surname").value;
+
+	var x = document.getElementById("searchinfo").value;
+
+		if(x == "Mark Harley"){
+			alert("Mark have you published yet?");
+		}
+
+
 		$.ajax({
  		type: "POST",
    		url: "../home/search/",
-   		data: {'info': x},
+   		data: {'info': x, 'search': selectedSearch},
    		datatype: "JSON",
 
    		success: function(data) {
@@ -57,7 +84,7 @@ function searchButtonClicked() {
    			var length = data['htmlList'].length;
 
    			for(var i =0; i < length; i++){
-   				$('#test').append(data['htmlList'][i]);  }
+   				$('#searchresults').append(data['htmlList'][i]);  }
     	},
 
     	error: function(jqXHR, textStatus, errorThrown) {
@@ -68,4 +95,5 @@ function searchButtonClicked() {
 		}
      });
 };
+
 {% endblock %}
