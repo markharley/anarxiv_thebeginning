@@ -114,7 +114,20 @@ p {
     font-size:12px Arial;
 }
 
+#authors{
+    color: black;
+}
 
+#authors a{
+    text-decoration: none;
+    color: black;
+    padding-right: 4px;
+}
+
+
+#authors a :hover{
+    color:blue;
+}
 
 #result{
     color:rgb(0,0,0);

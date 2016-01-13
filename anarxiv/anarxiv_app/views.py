@@ -18,6 +18,12 @@ subAnarxivDictionary = {'physics:astro-ph':'Astrophysics', 'physics:cond-mat': '
 def home(request):
 	 return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
 
+########################################################################################################################################################################################################
+
+# Log in and regestration views
+
+########################################################################################################################################################################################################
+
 def registrationForm(request):
 	return render(request,'registration.html',{})
 
@@ -45,18 +51,9 @@ def logout(request):
 
 ########################################################################################################################################################################################################
 
-# SUBARXIV VIEWS AND MASS PAPER STORAGE
+# MASS PAPER STORAGE
 
 ########################################################################################################################################################################################################
-
-
-# Renders the subanarxiv page and send to client
-def subanarxiv(request,area):
-	thisDay = datetime.date.today()
-	one_day = datetime.timedelta(days=1)
-	FiveDays = [str(thisDay - x*one_day) for x in range(5)]
-	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, "DATE": FiveDays}
-	return render(request,'subanarxiv.html', context)
 
 # Stores the new papers in the newPaper model
 def newPaperStore(paper):
@@ -287,34 +284,14 @@ def dailyPaperDisplay(request):
 
 	for paper in papers:
 		AuthorList = paper.author_set.all()
-		allAuthors =""
+		
+		context = {'title': paper.title, 'abstract': paper.abstract, 'recid' : paper.arxiv_no, 'subanarxiv':subanarxiv, 
+					'arxiv_no': paper.arxiv_no, 'new': paper.new, 'authorlist':AuthorList, 'arxivlink': "http://arxiv.org/abs/" + paper.arxiv_no}
 
-		for author in AuthorList:
-			if author.firstName != None:
-				allAuthors += author.firstName + " " + author.secondName + ", "		
-			else:
-				allAuthors +=  author.secondName + ", "		
-					
-			
-		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
-			
-		# Prints "et al" for large numbers of authors
-		if len(AuthorList) > 5:		
-			if AuthorList[0].firstName != None:
-				shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."	
-			else:
-				shortList = AuthorList[0].secondName + " et al..."	
-
-			allAuthors = shortList	
-	
-		else: 
-			shortList = allAuthors	
-
-		context = {'title': paper.title, 'abstract': paper.abstract, 'shortList': shortList, 'authors': allAuthors, 'recid' : 'arXiv:'+ paper.arxiv_no, 'subanarxiv':subanarxiv, 'arxiv_no': 'arXiv:' + paper.arxiv_no, 'new': paper.new}
-	
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if paper.new == 'no':
 			replacementList.append(str(template.render(context).encode('utf8')))		
+		
 		else:
 			newList.append(str(template.render(context).encode('utf8')))		
 		
@@ -338,12 +315,14 @@ def specificRequest(request):
 	papers = data['OAI-PMH']['ListRecords']['record']
 
 	template = loader.get_template("result_instance.html")
-	renderList = []
+
 	newList = []
 	replacementList = []
+	
 
 	# Iterating over the papers 
 	for paper in papers:
+		AuthorList = []	
 
 		article = paper['metadata']['arXiv']
 		date_added =  paper['header']['datestamp']
@@ -360,29 +339,19 @@ def specificRequest(request):
 		else:
 			newAuthors = authors	
 
-		AuthorList = ""	
 
 		for author in newAuthors:
+			name = {'firstName':"", 'secondName': ""}
+
 			if 'forenames' in author:
-				firstName = author['forenames']
-				AuthorList += firstName + " "
+				name['firstName'] = author['forenames']
 			
-			secondName = author['keyname']
-			AuthorList += secondName + ", "
+			name['secondName'] = author['keyname']
+			AuthorList.append(name)
 
-		if 'forenames' in newAuthors[0]:	
-			ShortList = newAuthors[0]['forenames'] + " " + newAuthors[0]['keyname'] + " et al.."	
-		else:
-			ShortList = newAuthors[0]['keyname'] + " et al.."			
+			
 
-		# Chose whether to use the short list of the long list	
-		if len(newAuthors) >5:
-			ListToUse = ShortList
-		else:
-			ListToUse = AuthorList	
-
-
-		context = {'title': title, 'authors': ListToUse, 'arxiv_no': arxiv_no, 'shortList': ShortList}	
+		context = {'title': title, 'authorlist': AuthorList, 'arxiv_no': arxiv_no}	
 
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if 'updated' in article:
@@ -391,8 +360,16 @@ def specificRequest(request):
 			newList.append(str(template.render(context).encode('utf8')))		
 		
 
-	return JsonResponse({'htmlList': renderList, 'newList': newList, 'replacementList':replacementList})		
+	return JsonResponse({'newList': newList, 'replacementList':replacementList})		
 		
+
+# Renders the subanarxiv page and send to client
+def subanarxiv(request,area):
+	thisDay = datetime.date.today()
+	one_day = datetime.timedelta(days=1)
+	FiveDays = [str(thisDay - x*one_day) for x in range(5)]
+	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, "DATE": FiveDays}
+	return render(request,'subanarxiv.html', context)
 
 ########################################################################################################################################################################################################
 
@@ -407,6 +384,9 @@ def inspiresDisplay(article):
 	paper['title'] = article['title']['title']
 	paper['inspiresnumber'] = article['recid']
 	paper['inspireslink'] = "http://inspirehep.net/record/" + str(article['recid'])
+
+	if 'url' in article:
+		paper['pdflink'] = article['url']['url']
 
 	# Finding the arXiv number associated with the paper
 	if 'primary_report_number' in article:
@@ -423,7 +403,7 @@ def inspiresDisplay(article):
 	if paper['arxiv_no']!= None and '-' in paper['arxiv_no']:	
 		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no']
 	elif paper['arxiv_no']!= None:	
-		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no'][6:]		
+		paper['arxivlink'] = "http://arxiv.org/abs/" + paper['arxiv_no']		
 
 	# The arXiv stores more than one abstract so this is the only way I can access it. Should be robust.
 	if 'abstract' in article:
@@ -435,7 +415,6 @@ def inspiresDisplay(article):
 		paper['abstract'] = "No abstract"		
 
 	# Gets the journal information
-
 	if 'publication_info' in article:
 		info = article['publication_info']	
 		if 'title' in info:
@@ -449,33 +428,16 @@ def inspiresDisplay(article):
 	else:
 		paper['journal_ref'] = "No publication data."		
 
-	
-	length = len(article['authors'])
-
-	Authors = ""
-	shortList = ""
-	
-
-	for j in range(length):
-		shortList += (article['authors'][j]['first_name']) + " " +(article['authors'][j]['last_name']) 
-		if length > 5:
-			shortList += ' et al.'
-			break
-		if j==length-1:
-			shortList += '.'
-		else:
-			shortList += ', '	
-
-	for j in range(length):
-		Authors+= (article['authors'][j]['first_name']) + " " +(article['authors'][j]['last_name']) 
-		if j==length-1:
-			Authors+= '.'
-		else:
-			Authors+= ', '			
 
 	
-	paper['authors'] = Authors
-	paper['shortList'] = shortList
+	AuthorList= []
+
+	for author in  article['authors']:
+		temp = {'firstName': author['first_name'], 'secondName': author['last_name']}
+		AuthorList.append(temp)
+
+	
+	paper['authorlist'] = AuthorList
 	paper['no_citations'] = "Citations: " + str(article['number_of_citations'])	
 
 	return paper	
@@ -490,7 +452,7 @@ def InspiresSearch(searchdata, searchtype):
 		url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=25&sc=0"
 	
 	elif searchtype == "specific":
-		url = baseurl +"record/" + searchdata + "?of=recjson&ot=recid,number_of_citations,authors,title"
+		url = baseurl +"record/" + searchdata + "?of=recjson&"
 	
 	try:
 		r = requests.get(url)
@@ -514,7 +476,7 @@ def arxivDisplay(article):
 
 	temp = article['id'].split("/")[-1]
 	if 'v' in temp:
-		paper['arxiv_no'] =  "arXiv:" + temp.split('v')[0]
+		paper['arxiv_no'] =  temp.split('v')[0]
 
 
 	paper['arxivlink'] = article['id']
@@ -538,23 +500,13 @@ def arxivDisplay(article):
 	else:
 		authorlist = article['author']
 
-	length = len(authorlist)
+	AuthorList =[]
 
-	Authors = ""
-	ShortList = ""
+	for author in authorlist:
+		authordict = {'firstName': author['name'], 'secondName': ""}
+		AuthorList.append(authordict)
 	
-	for j in range(length):
-		Authors += (authorlist[j]['name']) + ", "  
-	
-	Authors = Authors[:-2]+"."
-
-	if length>5:
-		ShortList += authorlist[0]['name'] + ' et al.'
-	else:
-		ShortList = Authors	
-
-	paper['authors'] = Authors
-	paper['shortList'] = ShortList	
+	paper['authorlist'] = AuthorList
 
 	return paper	
 
@@ -702,32 +654,33 @@ def paperdisplay(request, paperID):
 			paperChoice = Paper.objects.get(Inspires_no = paperID)
 
 		else:
-			paper = InspiresSearch(paperID, "specific")[0]	
+			paper = InspiresSearch(paperID, "specific")[0]
 			paperChoice = "NONE"
 
 
 	# If the paper was already stored we render it as follows	
 	if paperChoice != "NONE":	
 		# Returns set of authors related to this paper
-		AuthorList = paperChoice.author_set.all()
+		temp = paperChoice.author_set.all()
+		AuthorList= []
+		for x in temp:
+			temp2 = {'firstName':x.firstName, 'secondName':x.secondName}
+			AuthorList.append(temp2)
 
-		allAuthors =""
 
-		for author in AuthorList:
-			allAuthors += author.firstName + " " + author.secondName + ", "
-		allAuthors = allAuthors[:-2] + "."     # Sticks a full stop on the end because pretty
-		
-		# Prints "et al" for large numbers of authors
-		if len(AuthorList) > 5:		
-			shortList = AuthorList[0].firstName + " " + AuthorList[0].secondName + " et al..."		
-		
-		else: 
-			shortList = allAuthors	
-
-		context = {'title': paperChoice.title, 'authors':allAuthors, 'shortList': shortList, 'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
+		context = {'title': paperChoice.title, 'authorlist': AuthorList,  'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 
+					'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no}
 
 	else:
-		context = {'title': paper['title'], 'authors':paper['authors'], 'shortList':paper['shortList'], 'paperID': paper['inspiresnumber'] , 'abstract': paper['abstract'], 'journal_ref':paper['journal_ref'],'arxivno': paper['arxiv_no']}	
+		if paper['arxiv_no'] != None:
+			temp = "http://arxiv.org/pdf/" + paper['arxiv_no'] + ".pdf"
+		elif paper['pdflink'] != None:
+			temp = paper['pdflink']
+		else:
+			temp = "NOLINK"	
+
+		context = {'title': paper['title'], 'paperID': paper['inspiresnumber'] , 'abstract': paper['abstract'], 
+					'journal_ref':paper['journal_ref'],'arxivno': paper['arxiv_no'], 'pdflink':temp, 'authorlist': paper['authorlist']}	
 	
 	return render_to_response('paper.html', context)
 
