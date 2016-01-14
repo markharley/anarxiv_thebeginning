@@ -4,7 +4,7 @@ from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
-import requests, json, feedparser, re, urllib2, xmltodict, datetime, time, urllib
+import requests, json, feedparser, re, urllib2, xmltodict, datetime, time, urllib, calendar
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from collections import defaultdict
 
@@ -281,12 +281,23 @@ def dailyPaperDisplay(request):
 	template = loader.get_template("result_instance.html")
 	newList =[]
 	replacementList = []
+	newindex = 1
+	replacementindex = 1
 
 	for paper in papers:
 		AuthorList = paper.author_set.all()
+
+		if paper.new =='no':
+			index = replacementindex
+			replacementindex+=1
+		
+		else:
+			index = newindex
+			newindex+=1	
+
 		
 		context = {'title': paper.title, 'abstract': paper.abstract, 'recid' : paper.arxiv_no, 'subanarxiv':subanarxiv, 
-					'arxiv_no': paper.arxiv_no, 'new': paper.new, 'authorlist':AuthorList, 'arxivlink': "http://arxiv.org/abs/" + paper.arxiv_no}
+					'arxiv_no': paper.arxiv_no, 'new': paper.new, 'authorlist':AuthorList, 'arxivlink': "http://arxiv.org/abs/" + paper.arxiv_no, 'resultnumber':index}
 
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if paper.new == 'no':
@@ -318,6 +329,8 @@ def specificRequest(request):
 
 	newList = []
 	replacementList = []
+	newindex = 1
+	replacementindex = 1
 	
 
 	# Iterating over the papers 
@@ -349,9 +362,17 @@ def specificRequest(request):
 			name['secondName'] = author['keyname']
 			AuthorList.append(name)
 
+		
+		if 'updated' in article:
+			index = replacementindex
+			replacementindex+=1
+		
+		else:
+			index = newindex
+			newindex+=1		
 			
 
-		context = {'title': title, 'authorlist': AuthorList, 'arxiv_no': arxiv_no}	
+		context = {'title': title, 'authorlist': AuthorList, 'arxiv_no': arxiv_no, 'resultnumber':index}	
 
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if 'updated' in article:
@@ -367,8 +388,14 @@ def specificRequest(request):
 def subanarxiv(request,area):
 	thisDay = datetime.date.today()
 	one_day = datetime.timedelta(days=1)
-	FiveDays = [str(thisDay - x*one_day) for x in range(5)]
-	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, "DATE": FiveDays}
+	Days = []
+	
+	for x in range(5):
+		Day = {'DayName': calendar.day_name[(thisDay - x*one_day).weekday()], 'Date': str(thisDay - x*one_day) }
+		Days.append(Day)
+
+
+	context = {"SECTION": subAnarxivDictionary[str(area)], "ABREV": area, 'Dates': Days}
 	return render(request,'subanarxiv.html', context)
 
 ########################################################################################################################################################################################################
@@ -386,7 +413,10 @@ def inspiresDisplay(article):
 	paper['inspireslink'] = "http://inspirehep.net/record/" + str(article['recid'])
 
 	if 'url' in article:
-		paper['pdflink'] = article['url']['url']
+		if isinstance(article['url'], list):
+			paper['pdflink'] = article['url'][0]['url']
+		else:
+			paper['pdflink'] = article['url']['url']	
 
 	# Finding the arXiv number associated with the paper
 	if 'primary_report_number' in article:
@@ -419,7 +449,7 @@ def inspiresDisplay(article):
 		info = article['publication_info']	
 		if 'title' in info:
 			journal_ref = info['title'] 
-			if 'volume' in info:
+			if 'volume' in info and 'pagination' in info:
 				journal_ref += info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
 			
 			paper['journal_ref'] = journal_ref
@@ -443,14 +473,34 @@ def inspiresDisplay(article):
 	return paper	
 
 
+# This performs a quick xml request to calculate the total number of results generated in an inspires search.
+def findResultsNumber(searchdata):
+	urlconverted = urllib.quote_plus(searchdata)
+	url = "https://inspirehep.net/search?p=" + urlconverted + "&of=xm&ot=100,245"
+	urlfile = urllib2.urlopen(url)
+	data = urlfile.read()
+	A = data.split(" ")	
+	for x in A:
+	    if x == 'Search-Engine-Total-Number-Of-Results:':
+	    	numResults =  A[A.index(x)+1]
+
+	return numResults    	
+
+
 # Inspires search returns a list of papers
-def InspiresSearch(searchdata, searchtype):
+def InspiresSearch(searchdata, searchtype, start):
 	
 	baseurl = "https://inspirehep.net/"
 
+	if start != "":
+		startrecord = "&jrec=" + str(start)
+
+	else:
+		startrecord = ""	
+
 	if searchtype == "general":
-		url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=25&sc=0"
-	
+		url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=50&sc=0" + startrecord
+
 	elif searchtype == "specific":
 		url = baseurl +"record/" + searchdata + "?of=recjson&"
 	
@@ -474,10 +524,15 @@ def arxivDisplay(article):
 	paper = defaultdict(lambda: None)
 	paper['title'] = article['title']
 
-	temp = article['id'].split("/")[-1]
-	if 'v' in temp:
-		paper['arxiv_no'] =  temp.split('v')[0]
+	temp = article['id'].split("abs/")[-1]
 
+	if '/' in temp:
+		temp = temp.replace('/','+')
+	
+	if 'v' in temp:
+		temp = temp.split('v')[0]
+
+	paper['arxiv_no'] = temp	
 
 	paper['arxivlink'] = article['id']
 
@@ -512,12 +567,17 @@ def arxivDisplay(article):
 
 
 # arXiv search returns a list of papers
-def arXivSearch(searchdata):
+def arXivSearch(searchdata,start):
 
 	searchdata = searchdata.replace(" ","+AND+")
 
+	if start != "":
+		initresult = "&start="+ str(start)
+	else:
+		initresult = ""	
+
 	baseurl = "http://export.arxiv.org/api/" 
-	url = baseurl + "query?search_query=all:" + searchdata + "&start=0&max_results=50&sortBy=lastUpdatedDate&sortOrder=descending"
+	url = baseurl + "query?search_query=all:" + searchdata + initresult+"&max_results=50&sortBy=lastUpdatedDate&sortOrder=descending"
 	urlfile = urllib2.urlopen(url)
 	data = urlfile.read()
 	urlfile.close()
@@ -526,8 +586,9 @@ def arXivSearch(searchdata):
 	# this is the list of papers
 	if 'entry' in data['feed']:
 		papers = data['feed']['entry']
-		totalResults = data['feed']['opensearch:totalResults']
-		
+		totalResults = data['feed']['opensearch:totalResults']['#text']
+		startIndex = data['feed']['opensearch:startIndex']['#text']
+
 		if isinstance(papers,list) == False:
 			articles = []
 			articles.append(papers)
@@ -543,15 +604,18 @@ def arXivSearch(searchdata):
 			paperList.append(arxivDisplay(article))
 
 
-		return paperList	
+		return {'totalResults':totalResults, 'startIndex': startIndex, 'paperList': paperList}
 		
 	else:
-		return []	
+		return {}	
 
 # Combines the results of the two searches which will catch the edge cases which don't appear in both the arXiv and Inspires
-def InsparXivSearch(searchdata, searchtype):
-	A = arXivSearch(searchdata)
-	I = InspiresSearch(searchdata, searchtype)
+def InsparXivSearch(searchdata, searchtype, start):
+	A = arXivSearch(searchdata,start)['paperList']
+	I = InspiresSearch(searchdata, searchtype, start)
+
+	numArXiv = arXivSearch(searchdata,start)['totalResults']
+	numInspires = findResultsNumber(searchdata)
 
 	# Creates a list of arxiv_numbers to allow for easier comparison
 	arXivnums = [x['arxiv_no'] for x in I]
@@ -574,38 +638,47 @@ def search(request):
 	selectedsearch = request.POST['search']
 	template = loader.get_template("result_instance.html")
 	renderList = []
+
+	start = int(request.POST['index'])*50
+
 	
 
 	if selectedsearch == "Inspires":
 		# convert the string into a url friendly form
 		urlconverted = urllib.quote_plus(searchinfo)
-		
-		paperList = InspiresSearch(urlconverted, "general")
+		# returns the number of results
+		numResults = findResultsNumber(searchinfo)
+
+		paperList = InspiresSearch(urlconverted, "general", start)
 
 		for paper in paperList:
-			paper['resultnumber'] = str(paperList.index(paper)+1)
+			paper['resultnumber'] = str(paperList.index(paper)+ start + 1)
 			renderList.append(str(template.render(paper).encode('utf8')))
 
-		return JsonResponse({'htmlList': renderList})
+		return JsonResponse({'htmlList': renderList, 'totalResults':numResults, 'startIndex': start})
 
 	if selectedsearch == "arXiv":
-		paperList = arXivSearch(searchinfo)	
+		temp = arXivSearch(searchinfo, start)
+		paperList = temp['paperList']
+		numResults = temp['totalResults']
+		startIndex = temp['startIndex']
 
 		for paper in paperList:
-			paper['resultnumber'] = str(paperList.index(paper)+1)
+			paper['resultnumber'] = str(paperList.index(paper)+start+1) 
 			renderList.append(str(template.render(paper).encode('utf8')))
 
-		return JsonResponse({'htmlList': renderList})
+		return JsonResponse({'htmlList': renderList, 'totalResults':numResults, 'startIndex': startIndex})
 
 
 	if selectedsearch == "InsparXiv":
-		paperList = InsparXivSearch(searchinfo, "general")
+		paperList = InsparXivSearch(searchinfo, "general",start)
 
 		for paper in paperList:
-			paper['resultnumber'] = str(paperList.index(paper)+1)
+			paper['resultnumber'] = str(paperList.index(paper)+start+1)
 			renderList.append(str(template.render(paper).encode('utf8')))
 
-		return JsonResponse({'htmlList': renderList})
+		return JsonResponse({'htmlList': renderList, 'totalResults':numResults, 'startIndex': start})
+
 
 
 ########################################################################################################################################################################################################
@@ -621,6 +694,9 @@ def paperdisplay(request, paperID):
 
 	# It it has an arxiv prefix we search the newPaper and Paper models for it
 	if paperID[0:6]=="arXiv:":
+
+		if '+' in paperID:
+			paperID = paperID.replace('+','/')
 
 		# This cuts off the version modification to the end of the arXiv number
 		if "v" in paperID[6:]:
@@ -639,7 +715,7 @@ def paperdisplay(request, paperID):
 
 		# otherwise we request the info from the arXiv API	
 		else:
-			paper = arXivSearch(temp)[0]
+			paper = arXivSearch(temp,"")['paperList'][0]
 			paperChoice = "NONE"
 			
 
@@ -667,7 +743,7 @@ def paperdisplay(request, paperID):
 			temp2 = {'firstName':x.firstName, 'secondName':x.secondName}
 			AuthorList.append(temp2)
 
-		temp = "http://arxiv.org/pdf/" + paperChoice.arxiv_no + ".pdf" 	
+		temp = "http://arxiv.org/pdf/" + str(paperChoice.arxiv_no) + ".pdf" 	
 
 		context = {'title': paperChoice.title, 'authorlist': AuthorList,  'paperID': paperChoice.Inspires_no , 'abstract': paperChoice.abstract, 
 					'journal_ref':paperChoice.journal, 'arxivno':paperChoice.arxiv_no, 'pdflink': temp}
@@ -715,8 +791,8 @@ def messageSubmission(request):
 
 		# Else we create the paper object	
 		else:
-			p = arXivSearch(arxivno[6:])[0]
-			paper = Paper(p['title'], p['abstract'], p['arxiv_no'])
+			p = arXivSearch(arxivno,"")[0]
+			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'])
 			paper.save()
 			post = Post(message = message, paper = paper)
 
@@ -788,11 +864,8 @@ def getMessages(request):
 
 
 
-
-
-
- 
-
+def authorPage():
+	pass
 
 
 

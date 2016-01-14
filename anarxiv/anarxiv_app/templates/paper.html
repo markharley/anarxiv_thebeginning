@@ -32,7 +32,7 @@
 
 
 
-				<h3> {{ journal_ref|default_if_none:"" }} </h3>
+				<h3 id = "journalref"> {{ journal_ref|default_if_none:"" }} </h3>
 				
 				{% if paperID %}
 					<a href= "https://inspirehep.net/record/{{ paperID }}"><p> Inspires: {{paperID}} </p> </a>
@@ -46,8 +46,11 @@
 				<div> {{ abstract }} </div>
 				
 				
-				<textarea rows="4" cols="50" id="messageBox"> Type a message here! </textarea> <br>
+				<textarea rows="4" cols="50" id="messageBox">Type a message here!</textarea> <br>
 				<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+				<div id="messagewarning"></div>
+
+			
 
 				<div id = "messageApend"> </div>
 	</div>	
@@ -107,7 +110,6 @@
 		           	datatype: "JSON",
 
 		           	success: function(data){	
-		           	console.log("hi");
 
 
 		           		var length = data['messageHTML'].length;
@@ -129,6 +131,14 @@
 
 					var message = document.getElementById("messageBox").value;
 
+					if(message == "" || message == "Type a message here!"){
+						$('#messagewarning').html("");
+					
+						$('#messagewarning').append("<div class=\"alert alert-danger fade in\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a><strong>Hang on!</strong> Please enter a message into the box provided.</div>");
+
+					}
+					else{
+
 		 			$.ajax({
 		         	type: "POST",
 		           	url: "../messagesubmission/",
@@ -137,13 +147,14 @@
 
 
 		           	success: function(data) {
-		           		console.log("hi");
+		         
 		          
 	           			$('#messageApend').append(data['messageHTML']);
 
 			            }
 			         	
 			         	});
+			         	}
 
 					};
 

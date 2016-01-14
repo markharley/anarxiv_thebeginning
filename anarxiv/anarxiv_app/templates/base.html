@@ -8,6 +8,7 @@
 	{% csrf_token %}
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.6.0/math.min.js"></script>
 	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 	<link rel="stylesheet" href="{% static 'css/home.css' %}">
@@ -58,7 +59,7 @@
 	<div id="wrapper">
 
 		<div id = "header">
-			<h1> Welcome to the <a id = "homelink" href = "/home/">anarXiv </a>: allowing for easier communication amongst academics.</h1>
+			<h1> Welcome to the <a id = "homelink" href = "/home/">anarXiv </a>: making research more transparent.</h1>
 			<div id = "userNotLoggedIn"
 				{% if user.is_authenticated %}
 					class="hidden hangright"

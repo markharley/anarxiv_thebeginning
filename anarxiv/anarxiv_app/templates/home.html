@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 {% block title %} 
-	Anarxiv
+	anarXiv
 {% endblock %}
 
 
@@ -24,23 +24,26 @@
 
 		<form class="form-inline" role="form">
 			<div class="form-group">
-				<input type="text" id="searchinfo" value="bartrum">
+				<input type="text" id="searchinfo" value="berera">
 			</div>
 			
 			<div class="form-group">	
 			<select class="form-control">
 			    <option value="Inspires">Inspires</option>
-			    <option value="arXiv">arXiv</option>
-			    <option value="InsparXiv" selected>InsparXiv</option>
+			    <option value="arXiv" selected>arXiv</option>
+			    <option value="InsparXiv">InsparXiv</option>
 			</select>
 			</div>
 
 			<div class="form-group">
-				<button class="btn btn-primary" type="button" onclick="Search()" id = "searchButton">Search</button>
+				<button class="btn btn-primary" type="button" onclick="Search(0,1)" id = "searchButton">Search</button>
 			</div>
 			<div> Summarise the search parameters the search accepts here... at the moment the search accepts firstnames and surnames</div>
 		</form>
 
+
+		<div id = "totalresults" style ="display:none;"> Total number of results: </div>
+		<div id = "resultspage"> </div>
 
 		<div id= "searchresults"> <br> </div>
 
@@ -55,31 +58,53 @@
 
 {% block script %}
 
-function Search() {
+function Search(a,b) {
 	
 	var selectedSearch = $(".form-control option:selected").val();
 
 	$('#searchFail').css("display","none");
 	$('#searchresults').html("");
-
+	
 	$("#spinner").css("display", "block");
-
 
 	var x = document.getElementById("searchinfo").value;
 
-		if(x == "Mark Harley"){
-			alert("Mark have you published yet?");
-		}
+	if(b!="changepage"){
+		$('#totalresults').html("");
+		$('#resultspage').html("");
+	}
+
 
 
 		$.ajax({
  		type: "POST",
    		url: "../home/search/",
-   		data: {'info': x, 'search': selectedSearch},
+   		data: {'info': x, 'search': selectedSearch, 'index': a},
    		datatype: "JSON",
 
    		success: function(data) {
   			$("#spinner").css("display", "none");
+
+ 
+  			
+  			if(b!="changepage"){
+
+  			$('#totalresults').css("display","block");
+  			$('#totalresults').html("Total number of results: ")
+  			$('#totalresults').append(data['totalResults']);
+
+  			if(data['totalResults'] > 50){
+  				var num = parseInt(math.ceil(data['totalResults']/50.0));
+  				$('#resultspage').append("Page: ");
+  				for(var i=0; i< num; i++){
+
+  					$('#resultspage').append("<span class = \"pagenumber\" id = \"i\">" + String(i+1) + "</span>");
+  				}
+  			}
+  			}
+  			
+ 
+
 
    			var length = data['htmlList'].length;
 
@@ -95,5 +120,39 @@ function Search() {
 		}
      });
 };
+
+
+
+$(document).on('click',".pagenumber", function(){
+
+			
+		var index = $(this).html();
+
+			$('#index').css("color","rgb(0,255,0");	
+
+		Search(index-1,"changepage");
+
+		
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 {% endblock %}
