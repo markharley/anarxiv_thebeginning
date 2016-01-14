@@ -46,9 +46,10 @@
 				<div> {{ abstract }} </div>
 				
 				
-				<textarea rows="4" cols="50" id="messageBox">Type a message here!</textarea> <br>
-				<button type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+				<textarea rows="4" cols="100" id="messageBox">Type a message here!</textarea> <br>
+				<button class="btn btn-primary"type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
 				<div id="messagewarning"></div>
+
 
 			
 
@@ -150,6 +151,7 @@
 		         
 		          
 	           			$('#messageApend').append(data['messageHTML']);
+	           			document.getElementById("messageBox").value="";
 
 			            }
 			         	

@@ -9,14 +9,14 @@
 	<h1 id = "subarXiv"> {{ SECTION  }} </h1>
 
 	{% for x in Dates %}
-		<button type="button" class="btn btn-default" id = "{{ x.Date }}" onclick="getRecent(this.id)"> {{ x.DayName }} </br> ( {{x.Date}} ) </button>
+		<button type="button" class="btn btn-default dates" id = "{{ x.Date }}" onclick="getRecent(this.id)"> <strong>{{ x.DayName }}</strong> </br> ( {{x.Date}} ) </button>
 	{% endfor %}
 
-	<h6> Search for results from a specific date </h6>
+	<h6> Search this subarXiv for results from a specific date </h6>
 	<input type="text" id="searchdate">
 	<button class="btn btn-primary" type="button" onclick="search()" id = "searchButton">Search</button>
 
-	<div id = "Results">
+	<div id = "subarXivResults">
 	<h2> New </h2>
 
 	<div id= "New"> <br> </div>
@@ -53,6 +53,8 @@
 	           		var nlength = data['newList'].length;
 	           		var rlength = data['replacementList'].length;
 
+
+
 	           		if(nlength == 0){
 	           			$("#newFail").css("display","block")
 	           		}
@@ -67,8 +69,9 @@
 
 	           		for(var i = 0; i< rlength; i++){
 	           				$('#Replacements').append(data['replacementList'][i])  
-	           				}		
+	           				}	
 
+	  
 	           		
 	           	}
 	     }
@@ -78,13 +81,13 @@
 
 function getRecent(date) {
 
+
 	$('#newFail').css("display","none");
 	$('#replacementFail').css("display","none")
 
 	$('#New').html("");
 	$('#Replacements').html("");
 
-	$("#spinner").css("display", "block");
 
 		$.ajax({
 	 			type: "POST",
@@ -173,5 +176,17 @@ function search() {
 		}
      });
 };
+
+
+$(document).on('click',".dates", function(){
+
+		$(".dates").css("background-color","rgba(255,255,255,1)");
+		$(".dates").css("background-color","rgba(255,255,255,1)");
+			
+		$(this).css("background-color","rgba(0,0,255,0.1)");
+    	$(this).css("color","rgba(0,0,150,1)");
+
+
+});
 
 {% endblock %}

@@ -38,9 +38,8 @@
 			<div class="form-group">
 				<button class="btn btn-primary" type="button" onclick="Search(0,1)" id = "searchButton">Search</button>
 			</div>
-			<div> Summarise the search parameters the search accepts here... at the moment the search accepts firstnames and surnames</div>
+			<div id="searchinformation" > Click <span id ="SearchModal" data-toggle="modal" data-target="#myModal"> here </span> for a summary of the search engine</div>
 		</form>
-
 
 		<div id = "totalresults" style ="display:none;"> Total number of results: </div>
 		<div id = "resultspage"> </div>
@@ -53,6 +52,47 @@
 
 		<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
 		<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
+
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="myModalLabel" style="font-weight:bold;">anarXiv search engine</h4>
+     	 </div>
+     	 <div class="modal-body">
+         		<h6 style="font-weight:bold;"> arXiv search </h6>
+         			This returns results from a request to the arXiv's API. Input parameters currently accepted include name, title, keywords and arXiv numbers. 
+         			This tends to be the quickest of the three methods.
+
+         		<h6 style="font-weight:bold;"> Inspires search </h6>
+         			This returns results from a request to Inspires API. This accepts the standard Inspires search terms i.e. "find a bartrum and t warm inflation" etc
+         			as well as simply name, titles, keywords etc. Due to the nature of Inspires this will only return results from areas related to High energy physics. This is slower than an arXiv search.
+
+				<h6 style="font-weight:bold;"> InsparXiv search </h6>
+					This amalgamates the arXiv and Inspires searches into one, removing duplicates. This allows for a single search which will show results that are missed when either the arXiv or Inspires search is used alone and automatically includes up the new days papers. Not compatible with the Inspires search syntax, simply use name, title, keywords etc. This is the slowest of the three search methods.
+
+
+
+      
+     	 </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
 
 {% endblock %}
 
@@ -98,8 +138,11 @@ function Search(a,b) {
   				$('#resultspage').append("Page: ");
   				for(var i=0; i< num; i++){
 
-  					$('#resultspage').append("<span class = \"pagenumber\" id = \"i\">" + String(i+1) + "</span>");
+  					$('#resultspage').append('<span class = \"pagenumber\" id =' + i + '>' + String(i+1) + '</span>');
   				}
+
+  				$('#0').css("color","rgb(0,0,255)");
+				$('#0').css("font-size","20");	
   			}
   			}
   			
@@ -128,20 +171,18 @@ $(document).on('click',".pagenumber", function(){
 			
 		var index = $(this).html();
 
-			$('#index').css("color","rgb(0,255,0");	
+		$('.pagenumber').css("color","rgb(0,0,0)");
+		$('.pagenumber').css("font-size","16");	
+
+		$(this).css("color","rgb(0,0,255)");
+		$(this).css("font-size","20");	
+
 
 		Search(index-1,"changepage");
 
 		
 
 });
-
-
-
-
-
-
-
 
 
 
