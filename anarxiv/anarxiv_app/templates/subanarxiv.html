@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-	<h1> {{ SECTION  }} </h1>
+	<h1 id = "subarXiv"> {{ SECTION  }} </h1>
 
 	{% for x in Dates %}
 		<button type="button" class="btn btn-default" id = "{{ x.Date }}" onclick="getRecent(this.id)"> {{ x.DayName }} </br> ( {{x.Date}} ) </button>

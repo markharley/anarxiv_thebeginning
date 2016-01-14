@@ -281,12 +281,23 @@ def dailyPaperDisplay(request):
 	template = loader.get_template("result_instance.html")
 	newList =[]
 	replacementList = []
+	newindex = 1
+	replacementindex = 1
 
 	for paper in papers:
 		AuthorList = paper.author_set.all()
+
+		if paper.new =='no':
+			index = replacementindex
+			replacementindex+=1
+		
+		else:
+			index = newindex
+			newindex+=1	
+
 		
 		context = {'title': paper.title, 'abstract': paper.abstract, 'recid' : paper.arxiv_no, 'subanarxiv':subanarxiv, 
-					'arxiv_no': paper.arxiv_no, 'new': paper.new, 'authorlist':AuthorList, 'arxivlink': "http://arxiv.org/abs/" + paper.arxiv_no}
+					'arxiv_no': paper.arxiv_no, 'new': paper.new, 'authorlist':AuthorList, 'arxivlink': "http://arxiv.org/abs/" + paper.arxiv_no, 'resultnumber':index}
 
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if paper.new == 'no':
@@ -318,6 +329,8 @@ def specificRequest(request):
 
 	newList = []
 	replacementList = []
+	newindex = 1
+	replacementindex = 1
 	
 
 	# Iterating over the papers 
@@ -349,9 +362,17 @@ def specificRequest(request):
 			name['secondName'] = author['keyname']
 			AuthorList.append(name)
 
+		
+		if 'updated' in article:
+			index = replacementindex
+			replacementindex+=1
+		
+		else:
+			index = newindex
+			newindex+=1		
 			
 
-		context = {'title': title, 'authorlist': AuthorList, 'arxiv_no': arxiv_no}	
+		context = {'title': title, 'authorlist': AuthorList, 'arxiv_no': arxiv_no, 'resultnumber':index}	
 
 		# We add the paper to the replacement list if it has been updated, if it has not then it is new.
 		if 'updated' in article:
