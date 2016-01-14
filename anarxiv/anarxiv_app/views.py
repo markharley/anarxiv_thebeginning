@@ -392,7 +392,10 @@ def inspiresDisplay(article):
 	paper['inspireslink'] = "http://inspirehep.net/record/" + str(article['recid'])
 
 	if 'url' in article:
-		paper['pdflink'] = article['url']['url']
+		if isinstance(article['url'], list):
+			paper['pdflink'] = article['url'][0]['url']
+		else:
+			paper['pdflink'] = article['url']['url']	
 
 	# Finding the arXiv number associated with the paper
 	if 'primary_report_number' in article:
@@ -425,7 +428,7 @@ def inspiresDisplay(article):
 		info = article['publication_info']	
 		if 'title' in info:
 			journal_ref = info['title'] 
-			if 'volume' in info:
+			if 'volume' in info and 'pagination' in info:
 				journal_ref += info['volume'] +" " + "(" +info['year'] + ")" +" " + info['pagination'] + "."
 			
 			paper['journal_ref'] = journal_ref
@@ -449,14 +452,34 @@ def inspiresDisplay(article):
 	return paper	
 
 
+# This performs a quick xml request to calculate the total number of results generated in an inspires search.
+def findResultsNumber(searchdata):
+	urlconverted = urllib.quote_plus(searchdata)
+	url = "https://inspirehep.net/search?p=" + urlconverted + "&of=xm&ot=100,245"
+	urlfile = urllib2.urlopen(url)
+	data = urlfile.read()
+	A = data.split(" ")	
+	for x in A:
+	    if x == 'Search-Engine-Total-Number-Of-Results:':
+	    	numResults =  A[A.index(x)+1]
+
+	return numResults    	
+
+
 # Inspires search returns a list of papers
-def InspiresSearch(searchdata, searchtype):
+def InspiresSearch(searchdata, searchtype, start):
 	
 	baseurl = "https://inspirehep.net/"
 
+	if start != "":
+		startrecord = "&jrec=" + str(start)
+
+	else:
+		startrecord = ""	
+
 	if searchtype == "general":
-		url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=25&sc=0"
-	
+		url = baseurl + "search?ln=en&ln=en&p=" + searchdata + "&of=recjson&action_search=Search&sf=earliestdate&so=d&rg=50&sc=0" + startrecord
+
 	elif searchtype == "specific":
 		url = baseurl +"record/" + searchdata + "?of=recjson&"
 	
@@ -480,10 +503,15 @@ def arxivDisplay(article):
 	paper = defaultdict(lambda: None)
 	paper['title'] = article['title']
 
-	temp = article['id'].split("/")[-1]
-	if 'v' in temp:
-		paper['arxiv_no'] =  temp.split('v')[0]
+	temp = article['id'].split("abs/")[-1]
 
+	if '/' in temp:
+		temp = temp.replace('/','+')
+	
+	if 'v' in temp:
+		temp = temp.split('v')[0]
+
+	paper['arxiv_no'] = temp	
 
 	paper['arxivlink'] = article['id']
 
@@ -561,9 +589,12 @@ def arXivSearch(searchdata,start):
 		return {}	
 
 # Combines the results of the two searches which will catch the edge cases which don't appear in both the arXiv and Inspires
-def InsparXivSearch(searchdata, searchtype):
-	A = arXivSearch(searchdata,"")['paperList']
-	I = InspiresSearch(searchdata, searchtype)
+def InsparXivSearch(searchdata, searchtype, start):
+	A = arXivSearch(searchdata,start)['paperList']
+	I = InspiresSearch(searchdata, searchtype, start)
+
+	numArXiv = arXivSearch(searchdata,start)['totalResults']
+	numInspires = findResultsNumber(searchdata)
 
 	# Creates a list of arxiv_numbers to allow for easier comparison
 	arXivnums = [x['arxiv_no'] for x in I]
@@ -594,14 +625,16 @@ def search(request):
 	if selectedsearch == "Inspires":
 		# convert the string into a url friendly form
 		urlconverted = urllib.quote_plus(searchinfo)
-		
-		paperList = InspiresSearch(urlconverted, "general")
+		# returns the number of results
+		numResults = findResultsNumber(searchinfo)
+
+		paperList = InspiresSearch(urlconverted, "general", start)
 
 		for paper in paperList:
-			paper['resultnumber'] = str(paperList.index(paper)+1)
+			paper['resultnumber'] = str(paperList.index(paper)+ start + 1)
 			renderList.append(str(template.render(paper).encode('utf8')))
 
-		return JsonResponse({'htmlList': renderList})
+		return JsonResponse({'htmlList': renderList, 'totalResults':numResults, 'startIndex': start})
 
 	if selectedsearch == "arXiv":
 		temp = arXivSearch(searchinfo, start)
@@ -617,13 +650,14 @@ def search(request):
 
 
 	if selectedsearch == "InsparXiv":
-		paperList = InsparXivSearch(searchinfo, "general")
+		paperList = InsparXivSearch(searchinfo, "general",start)
 
 		for paper in paperList:
-			paper['resultnumber'] = str(paperList.index(paper)+1)
+			paper['resultnumber'] = str(paperList.index(paper)+start+1)
 			renderList.append(str(template.render(paper).encode('utf8')))
 
-		return JsonResponse({'htmlList': renderList})
+		return JsonResponse({'htmlList': renderList, 'totalResults':numResults, 'startIndex': start})
+
 
 
 ########################################################################################################################################################################################################
@@ -639,6 +673,9 @@ def paperdisplay(request, paperID):
 
 	# It it has an arxiv prefix we search the newPaper and Paper models for it
 	if paperID[0:6]=="arXiv:":
+
+		if '+' in paperID:
+			paperID = paperID.replace('+','/')
 
 		# This cuts off the version modification to the end of the arXiv number
 		if "v" in paperID[6:]:

@@ -66,6 +66,7 @@ function Search(a) {
 	$('#searchresults').html("");
 	$('#totalresults').html("Total number of results: ");
 	$('#resultspage').html("");
+	$('#nextpage').html("");
 
 	$("#spinner").css("display", "block");
 
@@ -86,6 +87,7 @@ function Search(a) {
   			$('#totalresults').css("display","block");
   			$('#totalresults').append(data['totalResults'])	;
 
+  			
   			if(data['totalResults'] > 50){
   				var num = parseInt(math.ceil(data['totalResults']/50.0));
   				$('#resultspage').append("Page: ");
@@ -95,6 +97,9 @@ function Search(a) {
   				}
   			}
   			
+  			
+ 
+
 
    			var length = data['htmlList'].length;
 
@@ -115,7 +120,6 @@ function Search(a) {
 
 $(document).on('click',".pagenumber", function(){
 
-
 		
 		var index = $(this).html();
 		Search(index);
@@ -123,6 +127,8 @@ $(document).on('click',".pagenumber", function(){
 		
 
 });
+
+
 
 
 

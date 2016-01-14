@@ -16,7 +16,7 @@ urlpatterns = [
 
 
 	# Links to single paper views
-	url(r'^result/(?P<paperID>[a-zA-Z0-9._:-]+)/$', views.paperdisplay, name='paperdisplay'),
+	url(r'^result/(?P<paperID>[a-zA-Z0-9+._:-]+)/$', views.paperdisplay, name='paperdisplay'),
 
 	# Subarxiv RSS rips and storage etc
 	url(r'^subanarxiv/new/$', views.dailyPaperDisplay, name='subanarxiv_new'),
