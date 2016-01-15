@@ -315,3 +315,31 @@ p {
     margin-bottom: 10px;
 }
 
+
+#signup{
+    margin-top: 20px;
+    color:rgba(0,0,250,0.8);
+    font-weight: bold;
+}
+
+
+.modal-header{
+    background-color: rgba(0,0,200,0.5);
+  color:white !important;
+  text-align: center;
+  font-size: 40px;
+}
+#loginbutton{
+    background-color: rgba(0,200,255,0.3);
+    border-color: rgba(0,200,255,0.8);
+
+}
+
+
+.modal-footer {
+  background-color: #f9f9f9;
+}
+
+
+
+
