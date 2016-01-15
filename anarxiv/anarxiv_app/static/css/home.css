@@ -207,6 +207,10 @@ p {
       text-decoration:none;
 }
 
+#abstract{
+      text-align: justify;
+      text-justify: inter-word;
+}
 
 #pdfview{
     float:right;
@@ -223,6 +227,7 @@ p {
 #paperdetails{
     float:left;
     width: 50%;
+    padding-right: 20px;
 }   
 
 
@@ -246,9 +251,22 @@ p {
     top:100px;
 }
 
+#homepagesearch{
+    margin-bottom: 15px;
+}
 
 
 /*STYLINGS FOR THE MESSAGES*/
+
+.message{
+    text-align: justify;
+    text-justify: inter-word;
+    border-radius: 10px;
+    border-color: rgba(0,0,150,0.1);
+    border-style: solid;
+    padding: 10px;
+}
+
 
 #messageBox{
     margin-top:20px;
@@ -268,7 +286,32 @@ p {
 }
 
 
+#messagecomment{
+    color:rgba(0,0,250,0.3);
+    float:right;
+    padding-left: 10px;
 
+}
 
+#messagedelete{
+    float:right;
+    color:rgba(0,0,250,0.3);
+}
 
+#messagedelete:hover{
+    color:rgba(0,0,250,0.5);
+}
+
+#messagecomment:hover{
+    color:rgba(0,0,250,0.5);
+}
+
+#Login{
+    text-decoration: none;
+    color:rgb(255,255,255);
+}
+
+#arXivLink{
+    margin-bottom: 10px;
+}
 
