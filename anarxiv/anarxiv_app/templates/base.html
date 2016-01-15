@@ -59,14 +59,16 @@
 	<div id="wrapper">
 
 		<div id = "header">
-			<h1> Welcome to the <a id = "homelink" href = "/home/">anarXiv </a>: making research more transparent.</h1>
+			<div id = "WebsiteTitle">
+				<h1> Welcome to the <a id = "homelink" href = "/home/">anarXiv </a>: making research more transparent.</h1>
+			</div>
 			<div id = "userNotLoggedIn"
 				{% if user.is_authenticated %}
 					class="hidden hangright"
 				{% else %}
 					class="hangright"
 				{% endif %} >
-				<a href="#" data-toggle="modal" data-target="#loginModal"> Login </a>
+				<a href="#" data-toggle="modal" data-target="#loginModal" id="Login"> Login </a>
 			</div>
 		
 			<div id = "userLoggedIn"
