@@ -12,7 +12,7 @@ urlpatterns = [
 	# Inspires search 
 	url(r'^search/$', views.search, name='search'),
 
-	url(r'^author/(?P<authorID>[a-zA-Z0-9._%:-]+)$', views.authorPage),
+	url(r'^author/(?P<authorID>[a-zA-Z0-9.+_%:-]+)/$', views.authorPage),
 
 
 	# Links to single paper views

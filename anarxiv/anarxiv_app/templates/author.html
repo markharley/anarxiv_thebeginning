@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+
+{% block content %}
+	<h1> {{ author }} </h1>
+
+
+	<h2> Stored papers </h2>
+	<div id = "storedpapers"> 
+	{% for paper in papers %}
+			<p> {{ paper.title }} </p>
+			<p> {{ paper.journal }} </p>
+			<p> {{ paper.arxiv_no }}</p>
+			<p> {{ paper.Citation_count }}</p>
+	{% endfor %}		
+
+	</div>
+
+	<h2> Papers with posts </h2>
+		<div id = "storedpapers"> 
+			{% for paper in paperswithposts %}
+					<p> {{ paper.title }} </p>
+					<p> {{ paper.journal }} </p>
+					<p> {{ paper.arxiv_no }}</p>
+					<p> {{ paper.Citation_count }}</p>
+			{% endfor %}		
+
+	</div>
+
+	
+
+
+{% endblock %}
+
+
+
+
+

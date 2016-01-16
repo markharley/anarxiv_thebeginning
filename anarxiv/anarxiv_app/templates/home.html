@@ -38,7 +38,7 @@
 			<div class="form-group">
 				<button class="btn btn-primary" type="button" onclick="Search(0,1)" id = "searchButton">Search</button>
 			</div>
-			<div id="searchinformation" > Click <span id ="SearchModal" data-toggle="modal" data-target="#myModal"> here </span> for a summary of the search engine</div>
+			<div id="searchinformation" > Click <span id ="SearchModal" data-toggle="modal" data-target="#myModal" style="cursor:pointer"> here </span> for a summary of the search engine</div>
 		</form>
 
 		<div id = "totalresults" style ="display:none;"> Total number of results: </div>
@@ -138,7 +138,7 @@ function Search(a,b) {
   				$('#resultspage').append("Page: ");
   				for(var i=0; i< num; i++){
 
-  					$('#resultspage').append('<span class = \"pagenumber\" id =' + i + '>' + String(i+1) + '</span>');
+  					$('#resultspage').append('<span class = \"pagenumber\" id =' + i + ' style=\"cursor:pointer\">' + String(i+1) + '</span>');
   				}
 
   				$('#0').css("color","rgb(0,0,255)");
