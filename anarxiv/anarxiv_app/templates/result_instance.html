@@ -14,12 +14,12 @@
 			<p id = "authors">
 
 			{% if authorlist|length > 5 %}
-				<a href = "/home/author/{{ author.firstName}} {{ author.secondName }}/"> {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> et al.
+				<a href = "/home/author/{{ author.firstName}}+{{ author.secondName }}/"> {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> et al.
 		
 			{% else %}		
 				
 				{% for author in authorlist %}
-					<a href = "/home/author/{{author.firstName }} {{author.secondName}}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
+					<a href = "/home/author/{{author.firstName}}+{{author.secondName}}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
 				{% endfor %}
 
 			{% endif %}	

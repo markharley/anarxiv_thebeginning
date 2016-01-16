@@ -421,13 +421,17 @@ def inspiresDisplay(article):
 	# Finding the arXiv number associated with the paper
 	if 'primary_report_number' in article:
 		if not isinstance(article['primary_report_number'],list):
-			paper['arxiv_no'] = article['primary_report_number'][6:]
+			if article['primary_report_number'][0:5] == "arXiv":
+				paper['arxiv_no'] = article['primary_report_number'][6:]
+			else:
+				paper['arxiv_no'] = article['primary_report_number'].replace("/","+")
 		
 		else:	
 			for entry in article['primary_report_number']:
 				if entry[0:5] == "arXiv":
 					paper['arxiv_no'] = entry[6:]	
-			
+	
+
 
 	
 	if paper['arxiv_no']!= None and '-' in paper['arxiv_no']:	
@@ -558,7 +562,9 @@ def arxivDisplay(article):
 	AuthorList =[]
 
 	for author in authorlist:
-		authordict = {'firstName': author['name'], 'secondName': ""}
+		firstName = author['name'].split(" ")[0]
+		secondName = " ".join(author['name'].split(" ")[1:])
+		authordict = {'firstName': firstName, 'secondName': secondName}
 		AuthorList.append(authordict)
 	
 	paper['authorlist'] = AuthorList
@@ -730,7 +736,7 @@ def paperdisplay(request, paperID):
 			paperChoice = Paper.objects.get(Inspires_no = paperID)
 
 		else:
-			paper = InspiresSearch(paperID, "specific")[0]
+			paper = InspiresSearch(paperID, "specific","")[0]
 			paperChoice = "NONE"
 
 
@@ -750,6 +756,8 @@ def paperdisplay(request, paperID):
 
 	else:
 		if paper['arxiv_no'] != None:
+			if '+' in paper['arxiv_no']:
+				paper['arxiv_no'] = paper['arxiv_no'].replace("+","/")
 			temp = "http://arxiv.org/pdf/" + paper['arxiv_no'] + ".pdf"
 		elif paper['pdflink'] != None:
 			temp = paper['pdflink']
@@ -791,12 +799,14 @@ def messageSubmission(request):
 
 		# Else we create the paper object	
 		else:
-			p = arXivSearch(arxivno,"")[0]
-			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'])
+			p = arXivSearch(arxivno,"")['paperList'][0]
+			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'], journal = p['journal_ref'])
 			paper.save()
 			post = Post(message = message, paper = paper)
 
-	
+
+
+
 	# If the paper does not have an arXiv number	
 	else:
 		# We just have to look for the paper in the Paper database
@@ -861,13 +871,34 @@ def getMessages(request):
 	return JsonResponse({'messageHTML': renderList})
 
 
+def authorPage(request, authorID):
+	firstName = authorID.split("+")[0]
+	secondName = " ".join(authorID.split("+")[1:])
+	
+	if Author.objects.filter(firstName = firstName, secondName = secondName).count() != 0:
+		author = Author.objects.get(firstName = firstName, secondName = secondName)
+
+		papers = [x for x in author.articles.all()]
+		newpapers = [x for x in author.newarticles.all()]
+		totalPapers = papers + newpapers
+
+
+		paperswithposts = []
+		for paper in totalPapers:
+			x = paper.post_set.all()
+			if len(x) > 0:
+				paperswithposts.append(paper)
+
+	else: 
+		totalPapers = [{'title': 'NONE FOUND'}]
+		paperswithposts=[{'title': 'NONE FOUND'}]	
 
 
 
-def authorPage():
-	pass
 
+	context = {'author': firstName+" " +secondName, 'papers': totalPapers, 'paperswithposts': paperswithposts}
 
+	return render_to_response('author.html', context)	
 
 
 

@@ -13,17 +13,17 @@
 
 				{% if authorlist|length > 10 %}
 					<div id = "shortlist">
-						<a href = "/home/" > {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> <span id = "etal"> et al.</span>
+						<a href = "/home/{{ authorlist.0.firstName}}+{{ authorlist.0.secondName }}/" > {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> <span id = "etal"> et al.</span>
 					</div>
 					<div id = "fulllist" style="display:none;">
 						{% for author in authorlist %}
-						<a href = "/home/">  {{ author.firstName}}   {{ author.secondName }}  </a>
+						<a href = "/home/{{ author.firstName}}+{{ author.secondName }}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
 						{% endfor %}
 					</div>	
 
 				{% else %}		
 					{% for author in authorlist %}
-						<a href = "/home/">  {{ author.firstName}}   {{ author.secondName }}  </a>
+						<a href = "/home/{{ author.firstName}}+{{ author.secondName }}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
 					{% endfor %}
 				{% endif %}	
 

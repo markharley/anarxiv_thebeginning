@@ -106,8 +106,6 @@ class newPaper(models.Model):
 
 	area = models.ManyToManyField(subArxiv)
 
-
-
 class Author(models.Model):
 	
 	firstName = models.TextField(null = True)
