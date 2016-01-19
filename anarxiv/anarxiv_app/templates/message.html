@@ -1,9 +1,34 @@
 <div class="message">
-<div id="comment">
-	{{ message  }}
-	<div id="messageoptions">
-	<span id = "message_time">{{ time }}</span> <span id ="messagecomment"> comment </span>   <span id="messagedelete" data-toggle="modal" data-target="#myModal">delete</span>
+
+	<div id="message_comment">
+		 <div id = "message">
+		 	{{ message  }}
+		 </div>
+
+		<div id="messageoptions">
+			<span class = "message_time">{{ time }}</span> 
+			<span class = "messagecomment" id = "{{ number }}" onclick = "commentBox(this.id)"> comments </span>   
+			<span class = "delete"> delete </span> 
+		</div>
+	
 	</div>
+
+
 </div>
-</div>
+	
+	<div class = "collapsethis" id = "{{ number }}" style = "display:none;" >
+	
+	<div class = "insertcomments" id = "{{ number }}"></div>
+
+
+
+	<div class = "commentForm" id = "{{ number }}" >
+			
+			<textarea rows="4" cols="100" class="commentBox" id = "{{ number }}" >Type a message here!</textarea> <br>
+			<button class="btn btn-primary commentbutton" type="button" onclick="commentSubmitted(this.id)" id = "{{number }}" >Submit</button>
+			
+			<div class="commentwarning" id = "{{ number }}" > </div>
+	
+	</div>	
+
 <br>

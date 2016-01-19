@@ -9,6 +9,8 @@ urlpatterns = [
 
 	url(r'^result/messagerequest/$', views.getMessages, name='getMessages'),
 
+	url(r'^result/commentsubmission/$', views.commentSubmission),
+
 	# Inspires search 
 	url(r'^search/$', views.search, name='search'),
 

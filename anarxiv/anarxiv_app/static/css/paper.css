@@ -1,4 +1,49 @@
-.message{
+#paperdetails{
+    float:left;
+    width: 50%;
+    padding-right: 20px;
+    overflow:scroll;
+    max-height :1200px;
+}   
+
+
+
+#paper_abstract{
+      text-align: justify;
+      text-justify: inter-word;
+}
+
+#paper_arXivLink{
+    margin-bottom: 10px;
+}
+
+
+
+
+/*THE PDF VIEW BOX*/
+#pdfview{
+    float:right;
+    width:50%;
+    height:85%;
+
+}
+
+#pdfframe{
+    width:100%;
+    height: 100%;
+}
+
+
+#messageBox{
+    margin-top:20px;
+    border-radius: 5px;
+    padding:5px;
+}
+
+
+
+
+/*.message{
 	background-color: rgba(0,0,255,0.3);
 	border-width:3px;
 	border-color:rgb(255,255,255);
@@ -16,15 +61,7 @@
     max-height :470px;
 }
 
-#messageBox {
-	position: relative;
-	font-size: 12;
-	top: 20px;
-	height: 100px;
-	width: 400px;
-	border-width: 2px;
 
-}
 
 #searchbutton{
 	position:relative;
@@ -39,3 +76,4 @@
 
 }
 
+*/

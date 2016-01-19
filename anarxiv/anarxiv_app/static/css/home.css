@@ -1,53 +1,6 @@
-/* GLOBAL CLASS STYLINGS*/
 
-html,
-body {
-    margin:0;
-    padding:0;
-    background-color: rgb(255,255,255);
-    height:100%;
-    font-family: Helvetica, 'Lucida Grande', helvetica, arial, verdana, sans-serif;
-}
-
-p { 
-    margin:0 
-}
-
-
-/*Wrapper stylings*/
-
-#wrapper {
-    min-height:100%;
-    position:relative;
-}
-#header {
-    padding:10px;
-    background-color: rgba(0,0,150,0.6);
-    font-weight: bold;
-    color: rgb(255,255,255);
-    height: 140px;
-}
-
-#content {
-    padding-left: 10px;
-    padding-bottom:50px; 
-}
-
-#footer {
-    background-color: rgba(0,0,150,0.6);
-    width:100%;
-    height:50px;
-    position:absolute;
-    bottom:0;
-    left:0;
-    padding:5px;
-    font-weight: bold;
-    color: rgb(255,255,255);
-}
-
-#WebsiteTitle{
-    position:absolute;
-
+#searchinformation{
+    margin-top: 10px;
 }
 
 
@@ -56,9 +9,11 @@ p {
     color: rgb(0,0,160);
 }
 
-#searchinformation{
-    margin-top: 10px;
+#searchresults{
+    overflow:scroll;
+    max-height :700px;
 }
+
 #totalresults{
      font-weight: bold;
      font-size: 18; 
@@ -73,102 +28,22 @@ p {
 }
 
 
-
-/*other*/
-
-.hidden { display: none; }
-
-#header h1 {
-    padding-top: 2px;
-    margin-left: 30px; 
-    float: left;
+.spinner{
+    position:relative;
+    left:50%;
+    top:50px;
 }
 
-.hangright {
-    float: right; 
-    margin-right: 30px; 
-    height: 40px; 
-    padding-top: 35px;
+#searchFail {
+    position:relative;
+    top:100px;
 }
-
-
-#subarXiv{
-    margin-bottom: 30px;
-}
-
-/*ADDITIONAL HEADER OBJECT STYLIGNS*/
-
-#homelink{
-    text-decoration:none;
-    color: white;
-
-}
-
-/*SEARCH BUTTON*/
 
 #searchButton{
     margin:3px;
     padding:3px;
 
  }
-
-/*SEARCH ENTRY FIELD*/
-#searchField{
-    margin:3px;
-    padding:2px;
-}
-
-
-/*SUBANARXIV SEARCH ENVIRONMENT*/
-#subarXivResults{
-    overflow:scroll;
-    max-height :700px;
-}
-
-#abstractView{
-    background-color: #b31b1b;
-    color: rgb(0,0,255);
-}
-
-
-
-/* CSS styling for the individual search results*/
-.tooltip {
-    display:none;
-    position:absolute;
-    border:1px solid #333;
-    background-color:#161616;
-    border-radius:5px;
-    padding:10px;
-    color:#fff;
-    font-size:12px Arial;
-}
-
-#authors{
-    color: black;
-    font-size: 16;
-}
-
-#authors a{
-    text-decoration: none;
-    color: black;
-    padding-right: 4px;
-}
-
-
-#authors a :hover{
-    color:blue;
-}
-
-#result{
-    color:rgb(0,0,0);
-    margin:3px;
-    height:100px;
-
-}
-#result:hover { 
-    background-color: rgba(0,0,255,0.1);
-}
 
 .pagenumber {
     margin-right: 3px;
@@ -178,167 +53,22 @@ p {
     color: rgb(0,0,255);
 }
 
-#resultnumber{
-    font-size:20px Arial;
-    text-align:center;
-    float:left;
-    width: 40px;
-    height:100%;
-    text-align:left;
-    font-weight: bold;
-
-}
-
-#resultcontent{
-    height:100%;
-
-}
-
-#title{
-    font-weight: bold;
- }
-
-
-#journalref{
-    font-size: 12;
-}
-
-#paperlink {
-      text-decoration:none;
-}
-
-#abstract{
-      text-align: justify;
-      text-justify: inter-word;
-}
-
-#pdfview{
-    float:right;
-    width:50%;
-    height:85%;
-
-}
-
-#pdfframe{
-    width:100%;
-    height: 100%;
-}
-
-#paperdetails{
-    float:left;
-    width: 50%;
-    padding-right: 20px;
-}   
-
-
-/*SEARCH ANIMATIONS / FAILURE*/
-
-#searchresults{
-    overflow:scroll;
-    max-height :700px;
-}
-
-
-.spinner{
-    position:relative;
-    left:50%;
-    top:50px;
-
-}
-
-#searchFail {
-    position:relative;
-    top:100px;
-}
-
 #homepagesearch{
     margin-bottom: 15px;
 }
 
 
-/*STYLINGS FOR THE MESSAGES*/
-
-.message{
-    text-align: justify;
-    text-justify: inter-word;
-    border-radius: 10px;
-    border-color: rgba(0,0,150,0.1);
-    border-style: solid;
-    padding: 10px;
-}
 
 
-#messageBox{
-    margin-top:20px;
-    border-radius: 5px;
-    padding:5px;
-}
-
-#message_time{
-    font-size: 11;
-    position: relative;
-    top:2px;
-}
-
-.dates:hover{
-     background-color: rgba(0,0,255,0.1);
-     color: rgba(0,0,150,1);
-}
 
 
-#messagecomment{
-    color:rgba(0,0,250,0.3);
-    float:right;
-    padding-left: 10px;
-
-}
-
-#messagedelete{
-    float:right;
-    color:rgba(0,0,250,0.3);
-}
-
-#messagedelete:hover{
-    color:rgba(0,0,250,0.5);
-}
-
-#messagecomment:hover{
-    color:rgba(0,0,250,0.5);
-}
-
-#Login{
-    text-decoration: none;
-    color:rgb(255,255,255);
-}
-
-#arXivLink{
-    margin-bottom: 10px;
-}
 
 
-#signup{
-    margin-top: 20px;
-    color:rgba(0,0,250,0.8);
-    font-weight: bold;
-}
 
 
-.modal-header{
-    background-color: rgba(0,0,200,0.5);
-  color:white !important;
-  text-align: center;
-  font-size: 40px;
-}
-#loginbutton{
-    background-color: rgba(0,200,255,0.3);
-    border-color: rgba(0,200,255,0.8);
-
-}
 
 
-.modal-footer {
-  background-color: #f9f9f9;
-}
+
 
 
 

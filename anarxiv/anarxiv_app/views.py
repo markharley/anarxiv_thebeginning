@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
-from anarxiv_app.models import Paper, Post, Author, newPaper, subArxiv
+from anarxiv_app.models import Comment, Paper, Post, Author, newPaper, subArxiv
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt
 from lxml import html
@@ -791,18 +791,36 @@ def messageSubmission(request):
 		# We check the newPaper and Paper databases
 		if newPaper.objects.filter(arxiv_no = arxivno).count() != 0:
 			paper = newPaper.objects.get(arxiv_no = arxivno)
-			post = Post(message = message, new_paper = paper)
+			numposts = len(paper.post_set.all())
+			post = Post(message = message, new_paper = paper, messageID = numposts+1)
 		
 		elif Paper.objects.filter(arxiv_no = arxivno).count() != 0:
 			paper = Paper.objects.get(arxiv_no = arxivno)
-			post = Post(message = message, paper = paper)
+			numposts = len(paper.post_set.all())
+			post = Post(message = message, paper = paper, messageID = numposts+1)
 
 		# Else we create the paper object	
 		else:
 			p = arXivSearch(arxivno,"")['paperList'][0]
 			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'], journal = p['journal_ref'])
 			paper.save()
-			post = Post(message = message, paper = paper)
+			post = Post(message = message, paper = paper, messageID = 1)
+
+			authors = p['authorlist']
+
+			for author in authors:
+
+				if Author.objects.filter(firstName = author['firstName'], secondName = author['secondName']).count() == 0:
+		
+					temp = Author(firstName = author['firstName'], secondName = author['secondName'])
+					temp.save()
+					# Adds the paper to the Author
+					temp.articles.add(paper)
+			
+				else:
+					temp = Author.objects.get(firstName = author['firstName'], secondName = author['secondName'])
+					temp.articles.add(paper)	
+
 
 
 
@@ -812,17 +830,18 @@ def messageSubmission(request):
 		# We just have to look for the paper in the Paper database
 		if Paper.objects.filter(Inspires_no = message_id).count() == 1:
 			paper = Paper.objects.get(Inspires_no = message_id)
-			post = Post(message = message, paper = paper)
+			numposts = len(paper.post_set.all())
+			post = Post(message = message, paper = paper, messageID = numposts + 1)
 
 		# Else we create the paper object	
 		else:
 			temp = paperStore(message_id, "Inspires")
-			post = Post(message = message, paper = temp)
+			post = Post(message = message, paper = temp, messageID = 1)
 	
 
 	post.save()
 
-	context = {'message': post.message, 'time': post.date}
+	context = {'message': post.message, 'time': post.date, 'number': post.messageID}
 	template = loader.get_template("message.html")
 
 	temp = str(template.render(context).encode('utf8'))
@@ -837,6 +856,7 @@ def getMessages(request):
 	arxiv_no = request.POST['arxivno']
 	renderList = []
 	template = loader.get_template("message.html")
+	commenttemplate = loader.get_template("comment.html")
 
 	# If the paper has an arXiv number we search for it in the databases
 	if arxiv_no != '0':
@@ -862,9 +882,17 @@ def getMessages(request):
 	if article != "NONE":		
 		posts = article.post_set.all()	
 
-		for comment in posts:
-			context = {'message': comment.message, 'time': comment.date}
-			renderList.append(str(template.render(context).encode('utf8')))
+		for p in posts:
+			commentList =[]
+			subcomments = p.comment_set.all()
+			
+			for x in subcomments:
+				context = {'message': x.comment, 'time': x.date}
+				temp = str(commenttemplate.render(context).encode('utf8'))
+				commentList.append(temp)
+
+			context = {'message': p.message, 'time': p.date, 'number': p.messageID}
+			renderList.append( {'post': str(template.render(context).encode('utf8')),'comments':commentList, 'id': p.messageID} ) 
 			
 
 
@@ -901,7 +929,46 @@ def authorPage(request, authorID):
 	return render_to_response('author.html', context)	
 
 
+@csrf_exempt
+def commentSubmission(request):
+	comment = request.POST['comment']
+	messageid = request.POST['messageid']
+	Inspiresno = request.POST['id']
+	arxiv_no = request.POST['arxivno']
 
+	if arxiv_no != '0':
+		
+		if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 1:
+			article = newPaper.objects.get(arxiv_no = arxiv_no)
+		
+		elif Paper.objects.filter(arxiv_no = arxiv_no).count() == 1:
+			article = Paper.objects.get(arxiv_no = arxiv_no)	
+
+		else:
+			article = "NONE"	
+
+	# If the paper has an Inspires number but no arXiv number so we only check the Paper database
+	else:
+
+		if Paper.objects.filter(Inspires_no = str(Inspiresno)).count() ==1:
+			article = Paper.objects.get(Inspires_no = str(Inspiresno))
+		else:
+			article = "NONE"	
+
+
+
+	message = Post.objects.get(messageID = messageid, paper =article)
+
+	newcomment = Comment(comment = comment, parentmessage = message)
+	newcomment.save()
+
+
+	context = {'message': newcomment.comment, 'time': newcomment.date, 'number': messageid}
+	template = loader.get_template("comment.html")
+
+	temp = str(template.render(context).encode('utf8'))
+
+	return JsonResponse({'messageHTML': temp})
 
 
 

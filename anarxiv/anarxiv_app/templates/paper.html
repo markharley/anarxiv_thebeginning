@@ -9,7 +9,7 @@
 
 	<div id = "paperdetails">
 		<h2> {{ title }} </h2>
-				<div id = "Authors">
+				<div id = "paper_authors">
 
 				{% if authorlist|length > 10 %}
 					<div id = "shortlist">
@@ -32,30 +32,32 @@
 
 
 
-				<h3 id = "journalref"> {{ journal_ref|default_if_none:"" }} </h3>
+				<h3 id = "paper_journalref"> {{ journal_ref|default_if_none:"" }} </h3>
 				
 				{% if paperID %}
 					<a href= "https://inspirehep.net/record/{{ paperID }}" id = "inspiresLink"><p> Inspires: {{paperID}} </p> </a>
 				{% endif %}
 				
 				{% if arxivno %}
-					<a href= "http://arxiv.org/abs/{{ arxivno }}" id="arXivLink"><p> arXiv: {{arxivno}} </p> </a>
+					<a href= "http://arxiv.org/abs/{{ arxivno }}" id="paper_arXivLink"><p> arXiv: {{arxivno}} </p> </a>
 				{% endif %}
 
 
-				<div id = "abstract"> {{ abstract }} </div>
+				<div id = "paper_abstract"> {{ abstract }} </div>
 				
-				
-				<textarea rows="4" cols="100" id="messageBox">Type a message here!</textarea> <br>
-				<button class="btn btn-primary"type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
-				<div id="messagewarning"></div>
-
-
 			
 
 				<div id = "messageApend"> </div>
-	</div>	
 
+
+				<textarea rows="4" cols="100" id="messageBox">Type a message here!</textarea> <br>
+				<button class="btn btn-primary"type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+				
+				<div id="messagewarning"></div>
+
+	</div>
+
+		
 
 			<div id = "pdfview" >
 					{% if paper.pdflink != "NOLINK" %}
@@ -100,85 +102,142 @@
 
 {% block script %}
 
-			var x = 2;
-			$("#etal").click( function(){
+var x = 2;
+
+$("#etal").click( function(){
+
+	if(x%2==0){
+		$("#fulllist").css("display", "block");
+		$("#shortlist").css("display", "none");
+		x+=1
+	}
+	else{
+		$("#fullist").css("display", "none");
+		$("#shortlist").css("display", "block");
+		x+=1;
+
+	}
+	});
+
+
+
+
+$(document).ready(
+
+	$.ajax({
+         	type: "POST",
+           	url: "../messagerequest/",
+           	data: {'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
+           	datatype: "JSON",
+
+           	success: function(data){	
+
+
+           		var length = data['messageHTML'].length;
+           		
+           		for(var i =0; i < length; i++){
+           			$('#messageApend').append(data['messageHTML'][i]['post'])
+
+           			ID = data['messageHTML'][i]['id'];
+
+           			for(var j=0; j< data['messageHTML'][i]['comments'].length; j++){
+
+           				$("#" + ID + ".insertcomments").append( data['messageHTML'][i]['comments'][j]);
+           			}
+       
+           		}
+          	 }
+
+           	})
+
+	);
+
+
+
+
+function messageSubmitted() {
+
+	var message = document.getElementById("messageBox").value;
+
+	if(message == "" || message == "Type a message here!"){
 		
-				if(x%2==0){
-    				$("#fulllist").css("display", "block");
-    				$("#shortlist").css("display", "none");
-    				x+=1
-    			}
-    			else{
-    				$("#fullist").css("display", "none");
-    				$("#shortlist").css("display", "block");
-    				x+=1;
+		$('#messagewarning').html("");
+	
+		$('#messagewarning').append("<div class=\"alert alert-danger fade in\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a><strong>Hang on!</strong> Please enter a message into the box provided.</div>");
 
-    			}
-    			});
+	}
 
+	else{
 
-
+		$.ajax({
+ 			type: "POST",
+			url: "../messagesubmission/",
+		   	data: {'message':message, 'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
+		   	datatype: "JSON",
 
 
-		$(document).ready(
+   			success: function(data) {
+
+   				$('#messagewarning').html("");
+ 
+  				$('#messageApend').append(data['messageHTML']);
+				document.getElementById("messageBox").value="";
+
+        	}
+     	
+     		})
+     	}
+
+	};
 
 
-			$.ajax({
-		         	type: "POST",
-		           	url: "../messagerequest/",
-		           	data: {'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
-		           	datatype: "JSON",
+function commentBox(id){
 
-		           	success: function(data){	
+	$("#" + id + ".collapsethis").toggle();
+	$('.commentwarning').html("");
 
-
-		           		var length = data['messageHTML'].length;
-		           		
-		           		for(var i =0; i < length; i++){
-		           			$('#messageApend').append(data['messageHTML'][i])
-		       
-		           	}
-		           }
-
-		           	})
-
-			);
+}
 
 
 
 
-				function messageSubmitted() {
 
-					var message = document.getElementById("messageBox").value;
+function commentSubmitted(messageid){
 
-					if(message == "" || message == "Type a message here!"){
-						$('#messagewarning').html("");
+
+	var comment = $("#" + messageid + ".commentBox").val();
+
+	if(comment == "" || comment == "Type a message here!"){
+		
+		$('.commentwarning').html("");
+	
+		$('#' + messageid + '.commentwarning').append("<div class=\"alert alert-danger fade in\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a><strong>Hang on!</strong> Please enter a message into the box provided.</div>");
+
+	}
+
+	else{
+
+		$.ajax({
+		 	type: "POST",
+		   	url: "../commentsubmission/",
+		   	data: {'comment':comment, 'messageid': messageid, 'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}'},
+		   	datatype: "JSON",
+
+
+		   	success: function(data) {
+		 
+					$("#" + messageid + ".comments").append(data['messageHTML']);
+					$("#" + messageid + ".commentBox").html("");
 					
-						$('#messagewarning').append("<div class=\"alert alert-danger fade in\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a><strong>Hang on!</strong> Please enter a message into the box provided.</div>");
 
-					}
-					else{
-
-		 			$.ajax({
-		         	type: "POST",
-		           	url: "../messagesubmission/",
-		           	data: {'message':message, 'id': '{{ paperID|default_if_none:0}}', 'arxivno': '{{ arxivno|default_if_none:0 }}' },
-		           	datatype: "JSON",
+		        }
+		     	
+		    })
+		 }
 
 
-		           	success: function(data) {
-		         
-		          
-	           			$('#messageApend').append(data['messageHTML']);
-	           			document.getElementById("messageBox").value="";
 
-			            }
-			         	
-			         	});
-			         	}
-
-					};
-
+};
 
 
 {% endblock %}

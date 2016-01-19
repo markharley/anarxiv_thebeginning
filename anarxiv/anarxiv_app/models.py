@@ -118,9 +118,9 @@ class Author(models.Model):
 
 class Post(models.Model):
 
-	# Can a post have no message?  Surely we would reject that at the javascript level?
 	# Inspires_no = models.CharField(max_length=100, default='0')
 	message = models.TextField(default="")
+	messageID = models.IntegerField(null = True)
 
 	# What does te first arg. here do?  Should this be done with Django's auto_now instead...
 	date = models.DateTimeField('date published', default=datetime.datetime.today)
@@ -160,7 +160,12 @@ class Post(models.Model):
 
 
 
+class Comment(models.Model):
 
+	comment = models.TextField(default="")
+	date = models.DateTimeField('date published', default=datetime.datetime.today)
+
+	parentmessage = models.ForeignKey(Post, null = True)
 
 
 

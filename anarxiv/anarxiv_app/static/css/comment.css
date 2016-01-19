@@ -1,0 +1,8 @@
+.comment{
+    text-align: justify;
+    text-justify: inter-word;
+    border-radius: 10px;
+    border-color: rgba(0,0,150,0.1);
+    border-style: solid;
+    padding: 10px;
+}

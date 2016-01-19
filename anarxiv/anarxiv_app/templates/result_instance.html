@@ -1,17 +1,18 @@
-<div class="masterTooltip" title = "{{ abstract }}">
+<div title = "{{ abstract }}">
 
-<div id="result">
+<div id="search_result">
 
-	<div id = "resultnumber"> {{ resultnumber }} </div>
+	<div id = "search_resultnumber"> {{ resultnumber }} </div>
 
-	<div id = "resultcontent">
+	<div id = "search_resultcontent">
+
 		{% if arxiv_no %}
-			<a href= "/home/result/arXiv:{{ arxiv_no }}/" id = "paperlink"> <p id = "title"> {{ title }} </p> </a>
+			<a href= "/home/result/arXiv:{{ arxiv_no }}/" id = "search_paperlink"> <p id = "search_title"> {{ title }} </p> </a>
 		{% else %}	
-			 </p> <a href= "/home/result/{{ inspiresnumber }}/" id = "paperlink"> <p id = "title"> {{ title }} </p> </a>
+			 </p> <a href= "/home/result/{{ inspiresnumber }}/" id = "search_paperlink"> <p id = "search_title"> {{ title }} </p> </a>
 		{% endif %}
 
-			<p id = "authors">
+			<p id = "search_authors">
 
 			{% if authorlist|length > 5 %}
 				<a href = "/home/author/{{ author.firstName}}+{{ author.secondName }}/"> {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> et al.
@@ -28,8 +29,8 @@
 
 			<a href = "{{ arxivlink }} "> {{ arxiv_no|default_if_none:"" }}  </a>
 			<a href = "{{ inspireslink }} ">  {{ inspiresnumber|default_if_none:"" }}  </a>
-			<p id = "journal_ref"> {{ journal_ref }} </p>
-			<p id = "no_cites"> {{ no_citations }}</p>
+			<p id = "search_journal_ref"> {{ journal_ref }} </p>
+			<p id = "search_no_cites"> {{ no_citations }}</p>
 	</div>
 
 </div>

@@ -1,0 +1,102 @@
+/* GLOBAL CLASS STYLINGS*/
+
+html,
+body {
+    margin:0;
+    padding:0;
+    background-color: rgb(255,255,255);
+    height:100%;
+    font-family: Helvetica, 'Lucida Grande', helvetica, arial, verdana, sans-serif;
+}
+
+p { 
+    margin:0 
+}
+
+
+/*Wrapper stylings*/
+
+#wrapper {
+    min-height:100%;
+    position:relative;
+}
+#header {
+    padding:10px;
+    background-color: rgba(0,0,150,0.6);
+    font-weight: bold;
+    color: rgb(255,255,255);
+    height: 140px;
+}
+
+#content {
+    padding-left: 10px;
+    padding-bottom:50px; 
+}
+
+#footer {
+    background-color: rgba(0,0,150,0.6);
+    width:100%;
+    height:50px;
+    position:absolute;
+    bottom:0;
+    left:0;
+    padding:5px;
+    font-weight: bold;
+    color: rgb(255,255,255);
+}
+
+/*Website Title Styling*/
+
+#WebsiteTitle{
+    position:absolute;
+
+}
+
+/*Footer and header home link*/
+
+#homelink{
+    text-decoration:none;
+    color: white;
+
+}
+
+
+
+/*Modals and logins:*/
+
+#Login{
+    text-decoration: none;
+    color:rgb(255,255,255);
+}
+
+
+#signup{
+    margin-top: 20px;
+    color:rgba(0,0,250,0.8);
+    font-weight: bold;
+}
+
+#loginbutton{
+    background-color: rgba(0,200,255,0.3);
+    border-color: rgba(0,200,255,0.8);
+
+}
+
+.hangright {
+    float: right; 
+    margin-right: 30px; 
+    height: 40px; 
+    padding-top: 35px;
+}
+
+.modal-header{
+  background-color: rgba(0,0,200,0.5);
+  color:white !important;
+  text-align: center;
+  font-size: 40px;
+}
+
+
+.modal-footer {
+  background-color: #f9f9f9;
+}

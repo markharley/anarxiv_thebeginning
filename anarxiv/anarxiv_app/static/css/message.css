@@ -1,0 +1,81 @@
+.message{
+    text-align: justify;
+    text-justify: inter-word;
+    border-radius: 10px;
+    border-color: rgba(0,0,150,0.1);
+    border-style: solid;
+    margin-top: 15px;
+    padding: 10px;
+    word-wrap: break-word
+}
+
+
+
+
+
+/*OPTIONS AT THE BOTTOM OF THE MESSAGE DIV*/
+#messageoptions{
+    float:bottom;
+    margin-top:10px;
+}
+
+.message_time{
+    font-size: 11;
+    position: relative;
+}
+
+.messagecomment{
+    color:rgba(0,0,250,0.3);
+    float:right;
+    padding-right: 10px;
+    cursor:pointer;
+}
+
+.messagecomment:hover{
+    color:rgba(0,0,250,0.5);
+}
+
+.delete{
+    float:right;
+    padding-right: 10px;
+    color:rgba(0,0,250,0.3);
+    cursor:pointer;
+}
+
+.delete:hover{
+    color:rgba(0,0,250,0.5);
+}
+
+
+
+
+
+
+
+/*Comments inserted in this div*/
+.insertcomments{
+    width:75%;
+    margin-top: 10px;
+    margin-bottom:10px; 
+    margin-left: 25%;
+
+}
+
+
+/*COMMENT SUBMISSION FORM STYLINGS*/
+
+.commentForm{
+    margin-left: 25%;
+    padding: 10px;
+    width:75%;
+}
+
+#commentBox{
+    padding:10px;
+    border-radius: 5px;
+}
+
+.commentbutton{
+    padding:5px;
+    margin-top: 5px;
+}
