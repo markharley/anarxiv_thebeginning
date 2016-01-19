@@ -846,7 +846,7 @@ def messageSubmission(request):
 
 	temp = str(template.render(context).encode('utf8'))
 
-	return JsonResponse({'messageHTML': temp})
+	return JsonResponse({'messageHTML': temp, 'message_number':post.messageID})
 
 
 # This returns a JSON of all rendered previous messages for the paper we are looking at
@@ -962,13 +962,15 @@ def commentSubmission(request):
 	newcomment = Comment(comment = comment, parentmessage = message)
 	newcomment.save()
 
+	numcomments = len(message.comment_set.all())
+
 
 	context = {'message': newcomment.comment, 'time': newcomment.date, 'number': messageid}
 	template = loader.get_template("comment.html")
 
 	temp = str(template.render(context).encode('utf8'))
 
-	return JsonResponse({'messageHTML': temp})
+	return JsonResponse({'messageHTML': temp, 'num_comments': numcomments})
 
 
 

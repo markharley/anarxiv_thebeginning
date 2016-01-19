@@ -49,9 +49,6 @@
 
 
 
-
-
-
 /*Comments inserted in this div*/
 .insertcomments{
     width:75%;
@@ -70,7 +67,7 @@
     width:75%;
 }
 
-#commentBox{
+.commentBox{
     padding:10px;
     border-radius: 5px;
 }
@@ -78,4 +75,11 @@
 .commentbutton{
     padding:5px;
     margin-top: 5px;
+}
+
+
+
+.toggleCommentForm{
+    margin-top: 10px;
+
 }

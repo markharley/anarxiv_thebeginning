@@ -40,7 +40,9 @@
     padding:5px;
 }
 
-
+#toggleMessageBox{
+	margin-top: 20px;
+}
 
 
 /*.message{

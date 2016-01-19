@@ -49,12 +49,15 @@
 
 				<div id = "messageApend"> </div>
 
+				<button class="btn btn-primary" type="button" id = "toggleMessageBox" onclick="toggleMessageBox()">Add Another Message</button>
 
-				<textarea rows="4" cols="100" id="messageBox">Type a message here!</textarea> <br>
-				<button class="btn btn-primary"type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
-				
+				<div id ="messageSubmissionForm" style="display:none;">
+					<textarea rows="4" cols="100" id="messageBox" placeholder="Type a message here: " >Type a message here!</textarea> <br>
+					<button class="btn btn-primary"type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
+					
 				<div id="messagewarning"></div>
 
+				</div>
 	</div>
 
 		
@@ -121,6 +124,15 @@ $("#etal").click( function(){
 
 
 
+function toggleMessageBox(){
+	$('#messageSubmissionForm').toggle();	
+
+};
+
+function toggleCommentBox(id){
+	$('#' + id + ".commentForm").toggle();
+}
+
 
 $(document).ready(
 
@@ -139,6 +151,8 @@ $(document).ready(
            			$('#messageApend').append(data['messageHTML'][i]['post'])
 
            			ID = data['messageHTML'][i]['id'];
+
+           			$("#" + ID + ".comment_number").append(data['messageHTML'][i]['comments'].length)
 
            			for(var j=0; j< data['messageHTML'][i]['comments'].length; j++){
 
@@ -183,6 +197,8 @@ function messageSubmitted() {
   				$('#messageApend').append(data['messageHTML']);
 				document.getElementById("messageBox").value="";
 
+				$("#" + data['message_number'] + ".comment_number").append("0");
+
         	}
      	
      		})
@@ -195,6 +211,7 @@ function commentBox(id){
 
 	$("#" + id + ".collapsethis").toggle();
 	$('.commentwarning').html("");
+	$("#" + id + ".commentBox").val('');
 
 }
 
@@ -226,8 +243,12 @@ function commentSubmitted(messageid){
 
 		   	success: function(data) {
 		 
-					$("#" + messageid + ".comments").append(data['messageHTML']);
+					$("#" + messageid + ".insertcomments").append(data['messageHTML']);
 					$("#" + messageid + ".commentBox").html("");
+
+					$("#" + messageid + ".comment_number").html("");
+					$("#" + messageid + ".comment_number").append(data['num_comments']);
+					
 					
 
 		        }
