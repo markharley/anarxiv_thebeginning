@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
+{% block title %}{{title}}{% endblock %}
+
 
 {% block content %}
 
@@ -8,22 +10,22 @@
 	
 
 	<div id = "paperdetails">
-		<h2> {{ title }} </h2>
+		<h2 id = "paper_title"> {{ title }} </h2>
 				<div id = "paper_authors">
 
 				{% if authorlist|length > 10 %}
 					<div id = "shortlist">
-						<a href = "/home/{{ authorlist.0.firstName}}+{{ authorlist.0.secondName }}/" > {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> <span id = "etal"> et al.</span>
+						<a href = "/home/author/{{ authorlist.0.firstName}}+{{ authorlist.0.secondName }}/" > {{ authorlist.0.firstName}} {{ authorlist.0.secondName}} </a> <span id = "etal"> et al.</span>
 					</div>
 					<div id = "fulllist" style="display:none;">
 						{% for author in authorlist %}
-						<a href = "/home/{{ author.firstName}}+{{ author.secondName }}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
+						<a href = "/home/author/{{ author.firstName}}+{{ author.secondName }}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
 						{% endfor %}
 					</div>	
 
 				{% else %}		
 					{% for author in authorlist %}
-						<a href = "/home/{{ author.firstName}}+{{ author.secondName }}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
+						<a href = "/home/author/{{ author.firstName}}+{{ author.secondName }}/">  {{ author.firstName}}   {{ author.secondName }}  </a>
 					{% endfor %}
 				{% endif %}	
 
@@ -49,7 +51,7 @@
 
 				<div id = "messageApend"> </div>
 
-				<button class="btn btn-primary" type="button" id = "toggleMessageBox" onclick="toggleMessageBox()">Add Another Message</button>
+				<button class="btn btn-primary" type="button" id = "toggleMessageBox" onclick="toggleMessageBox()">Add A Message</button>
 
 				<div id ="messageSubmissionForm" style="display:none;">
 					<textarea rows="4" cols="100" id="messageBox" placeholder="Type a message here: " >Type a message here!</textarea> <br>
@@ -61,7 +63,6 @@
 	</div>
 
 		
-
 			<div id = "pdfview" >
 					{% if paper.pdflink != "NOLINK" %}
 						<iframe src= "{{ pdflink }}" id = "pdfframe"> </iframe>
@@ -71,14 +72,13 @@
 
 			
 			</div>
-			
 		
 
 	</div>
 
 
 
-<div class="modal fade" tabindex="-1" role="dialog" id = "#myModal">
+<div class="modal fade" tabindex="-1" role="dialog" id = "commentModal">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -125,12 +125,12 @@ $("#etal").click( function(){
 
 
 function toggleMessageBox(){
-	$('#messageSubmissionForm').toggle();	
+	$('#messageSubmissionForm').toggle('slow');	
 
 };
 
 function toggleCommentBox(id){
-	$('#' + id + ".commentForm").toggle();
+	$('#' + id + ".commentForm").slideDown('slow');
 }
 
 
@@ -209,12 +209,20 @@ function messageSubmitted() {
 
 function commentBox(id){
 
-	$("#" + id + ".collapsethis").toggle();
+	$("#" + id + ".collapsethis").slideDown('slow');
 	$('.commentwarning').html("");
 	$("#" + id + ".commentBox").val('');
 
 }
 
+function hideComments(id){
+
+	$("#" + id + ".collapsethis").slideUp('slow');
+	$('.commentwarning').html("");
+	$("#" + id + ".commentBox").val('');
+	$('#' + id + ".commentForm").css("display","none");
+
+}
 
 
 
@@ -259,6 +267,8 @@ function commentSubmitted(messageid){
 
 
 };
+
+
 
 
 {% endblock %}
