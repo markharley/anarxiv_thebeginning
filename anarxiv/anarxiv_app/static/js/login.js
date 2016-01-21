@@ -11,9 +11,9 @@ function renderLoggedInView(){
 
 function loginAttempt(){
 
+
 	var loginUser = document.getElementById("loginUser").value;
 	var loginPassword = document.getElementById("loginPassword").value;
-
 
 	$.ajax({
 		type: "POST",
@@ -25,10 +25,11 @@ function loginAttempt(){
 
 			if (data["loginError"]) {
 				$("#loginErrorMessage").removeClass("hidden");
-			} else {
+			} 
+			else {
 				user = data["username"];
 				renderLoggedInView();
-				$("#loginModal").modal("hide");
+				// $("#loginModal").modal("hide");
 			}
 		},
 

@@ -1,8 +1,9 @@
 from django.shortcuts import render_to_response, render, loader
 from django.http import HttpResponse, JsonResponse
 from anarxiv_app.models import Comment, Paper, Post, Author, newPaper, subArxiv, User
-from django.template import Context, Template
+from django.template import Context, Template, RequestContext
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 from lxml import html
 import requests, json, feedparser, re, urllib2, xmltodict, datetime, time, urllib, calendar
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -64,6 +65,8 @@ def registrationRequest(request):
 		return JsonResponse({})
 	return JsonResponse({})
 
+
+
 def login(request):
 	try:
 		attemptedUsername = request.POST['user']
@@ -71,6 +74,7 @@ def login(request):
 	except:
 		return JsonResponse({'loginError' : 'true'})
 
+	# Returns a User if the username and password match
 	user = authenticate(username=attemptedUsername, password=attemptedPassword)
 
 	if user is not None:
