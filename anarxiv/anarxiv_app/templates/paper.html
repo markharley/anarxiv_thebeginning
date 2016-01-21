@@ -51,7 +51,11 @@
 
 				<div id = "messageApend"> </div>
 
-				<button class="btn btn-primary" type="button" id = "toggleMessageBox" onclick="toggleMessageBox()">Add A Message</button>
+				{% if user.is_authenticated %}
+					<button class="btn btn-primary" type="button" id = "toggleMessageBox" onclick="toggleMessageBox()">Add A Message</button>
+				{% else %}
+					<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Hang on!</strong> Please log in to post a message.</div>
+				{% endif %}		
 
 				<div id ="messageSubmissionForm" style="display:none;">
 					<textarea rows="4" cols="100" id="messageBox" placeholder="Type a message here: " >Type a message here!</textarea> <br>
@@ -62,7 +66,7 @@
 				</div>
 	</div>
 
-		
+
 			<div id = "pdfview" >
 					{% if paper.pdflink != "NOLINK" %}
 						<iframe src= "{{ pdflink }}" id = "pdfframe"> </iframe>
@@ -104,6 +108,7 @@
 
 
 {% block script %}
+
 
 var x = 2;
 
@@ -171,6 +176,7 @@ $(document).ready(
 
 function messageSubmitted() {
 
+
 	var message = document.getElementById("messageBox").value;
 
 	if(message == "" || message == "Type a message here!"){
@@ -203,7 +209,6 @@ function messageSubmitted() {
      	
      		})
      	}
-
 	};
 
 
@@ -228,7 +233,7 @@ function hideComments(id){
 
 
 function commentSubmitted(messageid){
-
+	
 
 	var comment = $("#" + messageid + ".commentBox").val();
 

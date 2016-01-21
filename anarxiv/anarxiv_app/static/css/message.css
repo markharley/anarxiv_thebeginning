@@ -24,6 +24,11 @@
     position: relative;
 }
 
+.message_poster{
+    font-weight: bold;
+    margin-right:10px;
+}
+
 .messagecomment{
     color:rgba(0,0,250,0.3);
     float:right;

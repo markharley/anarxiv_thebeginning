@@ -141,7 +141,7 @@ class Post(models.Model):
 	# updated_at = models.DateTimeField(auto_now=True)
 
 	# Posts should be one-to-one linked with a user
-	# user  = models.OneToOneField(User)
+	poster  = models.ForeignKey(User, null = True)
 
 	# Posts should be many-to-one linked with a paper.  This lets you get all the post
 	# associated with a paper by doing stuff like...
@@ -178,6 +178,8 @@ class Comment(models.Model):
 	date = models.DateTimeField('date published', default=datetime.datetime.today)
 
 	parentmessage = models.ForeignKey(Post, null = True)
+
+	commenter = models.ForeignKey(User, null  = True)
 
 
 

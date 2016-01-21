@@ -6,6 +6,7 @@
 		 </div>
 
 		<div id="messageoptions">
+			<span class = "message_poster"> {{ user }} </span>
 			<span class = "message_time">{{ time }}</span> 
 			<span class = "messagecomment" id = "{{ number }}" onclick = "commentBox(this.id)"> comments (<span class = "comment_number" id = "{{number}}"></span>) </span>   
 			<span class = "delete"> delete </span> 
@@ -15,11 +16,10 @@
 
 
 </div>
-	
+
 	<div class = "collapsethis" id = "{{ number }}" style = "display:none;" >
 	
 	<div class = "insertcomments" id = "{{ number }}"></div>
-
 
 	<button class="btn btn-primary toggleCommentForm" type="button" id = "{{number}}" onclick="toggleCommentBox(this.id)">add a comment</button>
 	<button class="btn btn-danger closecomments" type="button" id = "{{number}}" onclick="hideComments(this.id)">hide</button>
@@ -32,6 +32,8 @@
 			
 			<div class="commentwarning" id = "{{ number }}" > </div>
 	
-	</div>	
+	</div>
+	
+
 
 <br>

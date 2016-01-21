@@ -807,7 +807,7 @@ def paperdisplay(request, paperID):
 		context = {'title': paper['title'], 'paperID': paper['inspiresnumber'] , 'abstract': paper['abstract'], 
 					'journal_ref':paper['journal_ref'],'arxivno': paper['arxiv_no'], 'pdflink':temp, 'authorlist': paper['authorlist']}	
 	
-	return render_to_response('paper.html', context)
+	return render(request,'paper.html', context)
 
 
 ########################################################################################################################################################################################################
@@ -832,19 +832,19 @@ def messageSubmission(request):
 		if newPaper.objects.filter(arxiv_no = arxivno).count() != 0:
 			paper = newPaper.objects.get(arxiv_no = arxivno)
 			numposts = len(paper.post_set.all())
-			post = Post(message = message, new_paper = paper, messageID = numposts+1)
+			post = Post(message = message, new_paper = paper, messageID = numposts+1, poster = request.user)
 		
 		elif Paper.objects.filter(arxiv_no = arxivno).count() != 0:
 			paper = Paper.objects.get(arxiv_no = arxivno)
 			numposts = len(paper.post_set.all())
-			post = Post(message = message, paper = paper, messageID = numposts+1)
+			post = Post(message = message, paper = paper, messageID = numposts+1, poster = request.user)
 
 		# Else we create the paper object	
 		else:
 			p = arXivSearch(arxivno,"")['paperList'][0]
 			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'], journal = p['journal_ref'])
 			paper.save()
-			post = Post(message = message, paper = paper, messageID = 1)
+			post = Post(message = message, paper = paper, messageID = 1, poster = request.user)
 
 			authors = p['authorlist']
 
@@ -871,17 +871,18 @@ def messageSubmission(request):
 		if Paper.objects.filter(Inspires_no = message_id).count() == 1:
 			paper = Paper.objects.get(Inspires_no = message_id)
 			numposts = len(paper.post_set.all())
-			post = Post(message = message, paper = paper, messageID = numposts + 1)
+			post = Post(message = message, paper = paper, messageID = numposts + 1, poster = request.user)
 
 		# Else we create the paper object	
 		else:
 			temp = paperStore(message_id, "Inspires")
-			post = Post(message = message, paper = temp, messageID = 1)
+			post = Post(message = message, paper = temp, messageID = 1, poster = request.user)
 	
 
 	post.save()
-
-	context = {'message': post.message, 'time': post.date, 'number': post.messageID}
+	
+	
+	context = {'message': post.message, 'time': post.date, 'number': post.messageID, 'user': post.poster.username}
 	template = loader.get_template("message.html")
 
 	temp = str(template.render(context).encode('utf8'))
@@ -922,6 +923,7 @@ def getMessages(request):
 	if article != "NONE":		
 		posts = article.post_set.all()	
 
+
 		for p in posts:
 			commentList =[]
 			subcomments = p.comment_set.all()
@@ -931,7 +933,7 @@ def getMessages(request):
 				temp = str(commenttemplate.render(context).encode('utf8'))
 				commentList.append(temp)
 
-			context = {'message': p.message, 'time': p.date, 'number': p.messageID}
+			context = {'message': p.message, 'time': p.date, 'number': p.messageID, 'user':p.poster}
 			renderList.append( {'post': str(template.render(context).encode('utf8')),'comments':commentList, 'id': p.messageID} ) 
 			
 
@@ -999,13 +1001,13 @@ def commentSubmission(request):
 
 	message = Post.objects.get(messageID = messageid, paper =article)
 
-	newcomment = Comment(comment = comment, parentmessage = message)
+	newcomment = Comment(comment = comment, parentmessage = message, commenter = request.user)
 	newcomment.save()
 
 	numcomments = len(message.comment_set.all())
 
 
-	context = {'message': newcomment.comment, 'time': newcomment.date, 'number': messageid}
+	context = {'message': newcomment.comment, 'time': newcomment.date, 'number': messageid, 'user':newcomment.commenter.username}
 	template = loader.get_template("comment.html")
 
 	temp = str(template.render(context).encode('utf8'))

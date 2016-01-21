@@ -29,7 +29,7 @@ function loginAttempt(){
 			else {
 				user = data["username"];
 				renderLoggedInView();
-				// $("#loginModal").modal("hide");
+				$("#loginModal").modal("hide");
 			}
 		},
 
