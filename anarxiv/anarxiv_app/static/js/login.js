@@ -10,8 +10,11 @@ function renderLoggedInView(){
 };
 
 function loginAttempt(){
+
 	var loginUser = document.getElementById("loginUser").value;
 	var loginPassword = document.getElementById("loginPassword").value;
+
+
 	$.ajax({
 		type: "POST",
 		url: "/home/login/",
@@ -19,6 +22,7 @@ function loginAttempt(){
 		datatype: "JSON",
 
 		success: function(data) {
+
 			if (data["loginError"]) {
 				$("#loginErrorMessage").removeClass("hidden");
 			} else {
@@ -31,7 +35,10 @@ function loginAttempt(){
 		error: function(jqXHR, textStatus, errorThrown) {
 			$("#loginServerError").removeClass("hidden");
 		}
-	});
+
+
+	})
+
 };
 
 function logout(){
@@ -53,3 +60,4 @@ function logout(){
 		}
 	})
 }
+

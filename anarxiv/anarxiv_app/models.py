@@ -87,6 +87,18 @@ class Paper(models.Model):
 
 
 
+	# def save_paper(self):
+	# 	self.save()
+
+	# def already_saved(self):
+	# 	pass	
+
+	# def display_as_result_instance(self):
+
+
+	# def 	
+
+
 # Temporary table to store the daily papers as they appear on the arxiv, they will get transfered to Paper model and wiped from here.
 class newPaper(models.Model):
 

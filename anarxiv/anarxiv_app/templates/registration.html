@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %} 
+	Anarxiv Registration
+{% endblock %}
+
+{% block content %}
+	<h3 style="padding-left: 30px">Welcome! We just need a few details to register you as a user.</h3>
+	<br>
+	<form class="container-fluid" role="form" class="col-large" style="padding-left: 30px" >
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px;">Email address:</label>
+			<div class="form-group col-xs-2" >
+		 		<input type="text" class="form-control" id="email" onchange="checkEmail()">
+			</div>
+
+			<div id="emailOK" class="col-xs-3 alert alert-success alert-inForm" style="display : none">
+				Email <span id="proposedEmail"></span> valid and available for use.
+			</div>
+
+			<div id="emailError" class="col-xs-1 alert alert-danger alert-inForm" style="display : none">
+				Invalid email.
+			</div>
+			
+			<div id="emailInUse" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
+				Email <span id="proposedEmail"></span> already in use.
+			</div>
+			
+			<div id="emailPollFailed" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
+				Failed to contact server.
+			</div>
+		</div>
+
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px;">Please choose a username:</label>
+			<div class="form-group col-xs-2">
+		 		<input type="text" class="form-control" id="usr" onchange="checkUsername()">
+			</div>
+
+			<div id="usernameOK" class="col-xs-3 alert alert-success alert-inForm" style="display : none">
+				Username <span id="proposedUsername"> </span> is available for use.
+			</div>
+
+			<div id="usernameInUse" class="col-xs-3 alert alert-danger alert-inForm" style="display : none">
+				Username: <span id="proposedUsername"></span> is already taken.
+			</div>
+			
+			<div id="usernamePollFailed" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
+				Failed to contact server.
+			</div>
+
+		</div>
+
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px">Choose a password:</label>
+			<div class="form-group col-xs-2">
+		 		<input type="password" class="form-control" id="pwd">
+			</div>
+		</div>
+
+		<div class="row">
+			<label for="usr" class="control-label col-xs-2" style="padding-top: 5px">Retype password:</label>
+			<div class="form-group col-xs-2">
+		 		<input type="password" class="form-control" id="pwdconf" onchange="confirmPassword()">
+			</div>
+
+			<div id="pwdConfFail" class="col-xs-2 alert alert-danger alert-inForm" style="display : none"> Passwords don't match.</div>
+		</div>
+
+		<div class="row">
+			<div class="col-xs-3">	
+				<div class="checkbox">
+					<label><input id="academicQ" type="checkbox" value="">University affiliated</label>
+				</div>
+			</div>
+			<div class="col-xs-1">
+				<button type="button" class="btn btn-block" onclick="submitAccountRequest()"> Submit </button>
+			</div>
+		</div>
+	</form>
+
+	<script type="text/javascript">
+		// html5 standard email validation regex, see  
+		// http://www.w3.org/TR/html5/forms.html#valid-e-mail-address
+		// for details
+		var emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+		function checkEmail(){
+			var inputEmail = $('#email').val();
+			if (emailRegex.exec(inputEmail)) {
+				emailPollStatus="valid";
+				$('#proposedEmail').html(inputEmail);
+				pollForEmail(inputEmail);
+				displayEmailValidationMessage();
+			} else {
+				emailPollStatus="invalid";
+				displayEmailValidationMessage();
+			}
+		}
+		function pollForEmail(email){
+			emailPoll=$.ajax({
+				type: "POST",
+				url: "/home/register/check/email/",
+				data: {"email" : email}, 
+				datatype: "JSON",
+				success: function(data) {
+					emailPollStatus = data["emailAvailable"];
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					emailPollStatus="serverError";
+				}
+			}).done( function () {
+					displayEmailValidationMessage();
+				}
+			);
+		}
+		function displayEmailValidationMessage(){
+			$("#emailError").css('display','none');
+			$("#emailInUse").css('display','none');
+			$("#emailOK").css('display','none');
+			$("#emailPollFailed").css('display','none');
+			switch (emailPollStatus) {
+				case "invalid" :
+					$('#emailError').css('display','inline-block');
+					break;
+				case "available" :
+					$("#emailOK").css('display','inline-block');
+					break;
+				case "inUse" :
+					$("#emailInUse").css('display','inline-block');
+					break;
+				case "serverError" :
+					$("#emailPollFailed").css('display','inline-block');
+					break;
+				default :
+					break;
+			}
+		}
+		function checkUsername(){
+			var username = $('#usr').val();
+			$('#proposedUsername').html(username);
+			usernamePoll=$.ajax({
+				type: "POST",
+				url: "/home/register/check/username/",
+				data: {"username" : username}, 
+				datatype: "JSON",
+				success: function(data) {
+					usernamePollStatus = data["usernameAvailable"];
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					usernamePollStatus="serverError";
+				}
+			}).done( function () {
+					displayUsernameValidationMessage();
+				}
+			);
+		}
+		function displayUsernameValidationMessage(){
+			$('#usernameOK').css('display','none');
+			$('#usernameInUse').css('display','none');
+			$('#usernamePollFailed').css('display','none');
+			switch (usernamePollStatus) {
+				case "available" :
+					$('#usernameOK').css('display','inline-block');
+					break;
+				case "inUse" :
+					$('#usernameInUse').css('display','inline-block');
+					break;
+				case "serverError" :
+					$('#usernamePollFailed').css('display','inline-block');
+					break;
+				default :
+					break;
+			}
+		}
+		function confirmPassword() {
+			var pwd = $("#pwd").val();
+			var pwdconf = $("#pwdconf").val();
+			if (pwd !== pwdconf) {
+				$("#pwdConfFail").css('display','inline-block');
+				pwdConf=null;
+			} else {
+				$("#pwdConfFail").css('display','none');
+				pwdConf="true";
+			}
+		}
+		function submitAccountRequest() {
+			checkEmail();
+			checkUsername();
+			confirmPassword();
+			$.when(usernamePoll,emailPoll).then( function (v1,v2) {
+					if (pwdConf) {
+						var username = $('#usr').val();
+						var inputEmail = $('#email').val();
+						var pwd = $("#pwd").val();
+						var academicQ = $("#academicQ").is(':checked')
+						alert(academicQ)
+						$.ajax({
+							type: "POST",
+							url : "/home/register/registrationRequest/",
+							data: {"email":inputEmail, "username":username, "password":pwd, "academicQ":academicQ},
+							datatype : "JSON",
+							success: function(){
+								window.location.replace("/home/")
+							}
+						});
+					}
+				}
+			);
+		}
+	</script>
+{% endblock %}
+
+{% block script %}
+{% endblock %}

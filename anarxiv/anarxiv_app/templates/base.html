@@ -23,6 +23,7 @@
 	
 	<script type="text/javascript" src="{% static 'js/ajax_setup.js' %}"></script>
 	<script type="text/javascript" src="{% static 'js/login.js' %}"></script>
+
 </head>
 <body>
 
@@ -63,7 +64,7 @@
             					<div class="checkbox">
               						<label><input type="checkbox" value="" checked>Remember me</label>
            						</div>
-             					 <button id = "loginbutton" type="submit" class="btn btn-success btn-block"><span class="glyphicon glyphicon-off" onclick="loginAttempt()"></span> Login</button>
+             					 <button id = "loginbutton" type="submit" class="btn btn-success btn-block" onclick="loginAttempt()"><span class="glyphicon glyphicon-off" ></span> Login</button>
          						 </form>
         				</div>
 
@@ -72,7 +73,7 @@
 		    				<p id="loginErrorMessage" class="hidden"> Invalid username or password, please try again. </p>
 		    				<p id="loginServerError" class="hidden"> Failed to contact the server, please try again later. </p>
 		    		   		<button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
-        			  <p>Not a member? <a href="#">Sign Up</a></p>
+        			  <p>Not a member? <a href="/home/register/">Sign Up</a></p>
           			<p>Forgot <a href="#">Password?</a></p>
 	    		</div>
 			</div>
