@@ -1,9 +1,9 @@
 function renderLoggedInView(){
 	if (user) {
 		document.getElementById("userNameField").innerHTML=user;
-		window.location.replace("/home/")
+		location.reload();
 	} else {
-		window.location.replace("/home/")
+		location.reload();
 	}
 };
 

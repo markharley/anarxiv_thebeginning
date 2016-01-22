@@ -6,7 +6,7 @@ body {
     padding:0;
     background-color: rgb(255,255,255);
     height:100%;
-    font-family: Helvetica, 'Lucida Grande', helvetica, arial, verdana, sans-serif;
+    font-family: arial, Helvetica, verdana,  'Lucida Grande', arial, verdana, sans-serif;
 }
 
 p { 
@@ -20,43 +20,31 @@ p {
     min-height:100%;
     position:relative;
 }
-#header {
- background-color: rgba(0,0,150,0.6);
-    font-weight: bold;
-    color: rgb(255,255,255);
-    height: 50px;
-}
 
 #content {
-    padding-left: 10px;
+    padding-top: 70px;
+    padding-left: 250px;
     padding-bottom:50px; 
     position:relative;
     height: 100%-190px;
 }
 
-#footer {
-    background-color: rgba(0,0,150,0.6);
-    width:100%;
-    height:50px;
-    position:absolute;
-    bottom:0;
-    left:0;
-    padding:10px;
-    font-weight: bold;
-    color: rgb(255,255,255);
+#navbar{
+    background-color: rgb(102,178,255);
+    border: none;
 }
 
-/*Website Title Styling*/
-
-#WebsiteTitle{
-    margin-top: 10px;
-    margin-left: 10px;
+#usernamefield{
+    color: white;
     font-size: 18;
-    display: inline-block;
-
+    font-weight: bold;
 }
 
-/*Footer and header home link*/
+#websitetitle{
+    color:white;
+    font-weight: bold;
+}
+
 
 #homelink{
     text-decoration:none;
@@ -64,51 +52,12 @@ p {
 
 }
 
-#userLogin{
-    float:right;
-    color: rgba(0,0,150,0.6);
-    font-size: 16;
-    height:50px;
-    display: inline-block;
+#userdropdown:hover{
+    background-color: rgb(51,153,255) !important;
 }
 
-#dropdownbutton{
-    height:100%;
-    background: none;
-    border-radius:0;
-    border:none;
-}
-
-#dropdownbutton:hover{
-    background-color: rgba(0,0,150,0.3);
-}
-
-/*Modals and logins:*/
-
-#Login{
-    text-decoration: none;
-    color:rgb(255,255,255);
-    font-size: 16;
-    height:100px;
-}
-
-#Logout{
-    text-decoration: none;
-    color: rgb(255,255,255);
-    font-size: 15;
-}
-
-#usernamefield{
-    margin-left: 10px;
-}
-
-#usermenu{
-    float: right;
-    margin-top: 0px;
-}
-
-.menupic{
-    padding-right: 5px;
+#userdropdown:focus{
+   background-color: rgb(51,153,255) !important;
 }
 
 .menuitem{
@@ -117,21 +66,9 @@ p {
 }
 
 
-#signup{
-    margin-top: 20px;
-    color:rgba(0,0,250,0.8);
-    font-weight: bold;
-}
 
-#loginbutton{
-    background-color: rgba(0,200,255,0.3);
-    border-color: rgba(0,200,255,0.8);
+/* Login Modal:*/
 
-}
-
-.hangright {
-    float: right; 
-}
 
 .modal-header{
   background-color: rgba(0,0,200,0.5);
@@ -147,10 +84,66 @@ p {
 
 
 
-
-.hidden { display: none; }
-
 .alert-inForm {
    padding: 6px 15px;
    height: 34px;
 }
+
+
+/* make side nav vertical */ 
+
+.side-nav {
+    position: fixed;
+    color: white !important;
+    top: 50px;
+    left: 225px;
+    width: 225px;
+    margin-left: -225px;
+    border: none;
+    overflow-y: auto;
+    background-color: rgb(102,178,255);
+    bottom: 0;
+    overflow-x: hidden;
+    padding-bottom: 40px;
+    font-size: 18;
+    font-weight: bold;
+}
+
+#sidebar_welcome{
+   margin-top: 30px;
+   padding: 30px;
+   font-size: 18;
+}
+
+#item{
+    text-decoration: none;
+    color: white;
+}
+#subitem{
+    text-decoration: none;
+    color: white;
+    font-size: 16;
+
+}
+.side-nav>li>a {
+    width: 225px;
+}
+
+.side-nav li a:hover,
+.side-nav li a:focus {
+    outline: none;
+    background-color: rgb(51,153,255) !important;
+}
+
+
+.side-nav>li>ul {
+    padding: 0;
+}
+
+.side-nav>li>ul>li>a {
+    display: block;
+    padding: 10px 15px 10px 38px;
+    text-decoration: none;
+    color: white;
+}
+
