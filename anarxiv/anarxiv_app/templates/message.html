@@ -1,5 +1,10 @@
 <div class="message">
 
+<div id = "messagecontainer">
+	<div id = "messagestats"> <span class="glyphicon glyphicon-arrow-up"></span><span class="glyphicon glyphicon-arrow-down"></span>
+		<div id = "upvotes"> {{ upvotes }} </div>
+	</div>
+
 	<div id="message_comment">
 		 <div id = "message">
 		 	{{ message  }}
@@ -15,7 +20,7 @@
 	</div>
 
 
-</div>
+	</div>
 
 	<div class = "collapsethis" id = "{{ number }}" style = "display:none;" >
 	
@@ -33,6 +38,10 @@
 			<div class="commentwarning" id = "{{ number }}" > </div>
 	
 	</div>
+
+</div>
+
+</div>	
 	
 
 

@@ -1,11 +1,9 @@
 function renderLoggedInView(){
 	if (user) {
-		$("#userLoggedIn").removeClass("hidden");
-		$("#userNotLoggedIn").addClass("hidden");
 		document.getElementById("userNameField").innerHTML=user;
+		window.location.replace("/home/")
 	} else {
-		$("#userLoggedIn").addClass("hidden");
-		$("#userNotLoggedIn").removeClass("hidden");
+		window.location.replace("/home/")
 	}
 };
 
@@ -30,6 +28,7 @@ function loginAttempt(){
 				user = data["username"];
 				renderLoggedInView();
 				$("#loginModal").modal("hide");
+				window.location.replace("/home/")
 			}
 		},
 

@@ -929,11 +929,11 @@ def getMessages(request):
 			subcomments = p.comment_set.all()
 			
 			for x in subcomments:
-				context = {'message': x.comment, 'time': x.date}
+				context = {'message': x.comment, 'time': x.date, 'user': x.commenter.username}
 				temp = str(commenttemplate.render(context).encode('utf8'))
 				commentList.append(temp)
 
-			context = {'message': p.message, 'time': p.date, 'number': p.messageID, 'user':p.poster}
+			context = {'message': p.message, 'time': p.date, 'number': p.messageID, 'user':p.poster, 'upvotes':p.upVotes}
 			renderList.append( {'post': str(template.render(context).encode('utf8')),'comments':commentList, 'id': p.messageID} ) 
 			
 

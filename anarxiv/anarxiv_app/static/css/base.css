@@ -21,11 +21,10 @@ p {
     position:relative;
 }
 #header {
-    padding:10px;
-    background-color: rgba(0,0,150,0.6);
+ background-color: rgba(0,0,150,0.6);
     font-weight: bold;
     color: rgb(255,255,255);
-    height: 140px;
+    height: 50px;
 }
 
 #content {
@@ -42,7 +41,7 @@ p {
     position:absolute;
     bottom:0;
     left:0;
-    padding:5px;
+    padding:10px;
     font-weight: bold;
     color: rgb(255,255,255);
 }
@@ -50,7 +49,10 @@ p {
 /*Website Title Styling*/
 
 #WebsiteTitle{
-    position:absolute;
+    margin-top: 10px;
+    margin-left: 10px;
+    font-size: 18;
+    display: inline-block;
 
 }
 
@@ -62,13 +64,56 @@ p {
 
 }
 
+#userLogin{
+    float:right;
+    color: rgba(0,0,150,0.6);
+    font-size: 16;
+    height:50px;
+    display: inline-block;
+}
 
+#dropdownbutton{
+    height:100%;
+    background: none;
+    border-radius:0;
+    border:none;
+}
+
+#dropdownbutton:hover{
+    background-color: rgba(0,0,150,0.3);
+}
 
 /*Modals and logins:*/
 
 #Login{
     text-decoration: none;
     color:rgb(255,255,255);
+    font-size: 16;
+    height:100px;
+}
+
+#Logout{
+    text-decoration: none;
+    color: rgb(255,255,255);
+    font-size: 15;
+}
+
+#usernamefield{
+    margin-left: 10px;
+}
+
+#usermenu{
+    float: right;
+    margin-top: 0px;
+}
+
+.menupic{
+    padding-right: 5px;
+}
+
+.menuitem{
+    padding-bottom: 3px;
+    padding-top: 3px;
 }
 
 
@@ -86,9 +131,6 @@ p {
 
 .hangright {
     float: right; 
-    margin-right: 30px; 
-    height: 40px; 
-    padding-top: 35px;
 }
 
 .modal-header{

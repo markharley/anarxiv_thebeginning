@@ -20,6 +20,8 @@
 	<link rel="stylesheet" href="{% static 'css/comment.css' %}">
 	<link rel="stylesheet" href="{% static 'css/paper.css' %}">
 	<link rel="stylesheet" href="{% static 'css/author.css' %}">
+	<link rel="stylesheet" href="{% static 'css/registration.css' %}">
+
 	
 	<script type="text/javascript" src="{% static 'js/ajax_setup.js' %}"></script>
 	<script type="text/javascript" src="{% static 'js/login.js' %}"></script>
@@ -89,27 +91,46 @@
 
 		<div id = "header">
 			<div id = "WebsiteTitle">
-				<h1> Welcome to the <a id = "homelink" href = "/home/">anarXiv </a>: making research more transparent.</h1>
+					<span> Welcome to the <a id = "homelink" href = "/home/">anarXiv </a>: making research more transparent.</span>
 			</div>
-			<div id = "userNotLoggedIn"
-				{% if user.is_authenticated %}
-					class="hidden hangright"
-				{% else %}
-					class="hangright"
-				{% endif %} >
-				<a href="#" data-toggle="modal" data-target="#loginModal" id="Login"> Login </a>
-			</div>
+
+
+			<div id = "userLogin">
+
+				<div class="dropdown">
+
+					{% if user.is_authenticated %}
+					  <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" id = "dropdownbutton"><span class= "glyphicon glyphicon-user"></span><span id="userNameField">{{user.username}}</span> 
 		
-			<div id = "userLoggedIn"
-				{% if not user.is_authenticated %}
-					class="hidden hangright"
-				{% else %}
-					class="hangright"
-				{% endif %} >
-				<p> Hello <span id="userNameField">{{user.username}}</span>! <a href="#" onclick="logout()">Logout</a> </p>
-				<p class="hidden" id="logoutErrorMessage"> Logout failed, try again.  </p>
+		
+					  <span class="caret"></span></button>
+					 	 <ul class="dropdown-menu pull-right" id = "usermenu">
+					    <li class = "menuitem"><a href="#"> <span class = "glyphicon glyphicon-user menupic"></span>Profile</a></li>
+					    <li class = "menuitem"><a href="#"> <span class = "glyphicon glyphicon-wrench menupic"></span>Settings</a></li>
+					     <li role="separator" class="divider"></li>
+					    <li class = "menuitem"><a href="#" onclick="logout()"><span class = "glyphicon glyphicon-off menupic"></span>Logout</a></li>
+					  </ul>
+
+					{% else %}
+						 <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" id = "dropdownbutton"><span class= "glyphicon glyphicon-user"></span><span id="userNameField">Login</span> 
+		
+		
+						  <span class="caret"></span></button>
+					 	 <ul class="dropdown-menu pull-right" id = "usermenu">
+					    <li class = "menuitem"><a href="#" data-toggle="modal" data-target="#loginModal"> <span class = "glyphicon glyphicon-user menupic" ></span>Login</a></li>
+					    <li class = "menuitem"><a href="/home/register/"> <span class = "glyphicon glyphicon-wrench menupic"></span>Signup</a></li>
+					  </ul>
+
+					{% endif %}  
+
+				</div>
+
+
 			</div>
 		</div>
+
+
+
 
 		<div id = "content">
 			{% block content %}
