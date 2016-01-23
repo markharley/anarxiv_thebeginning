@@ -55,3 +55,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+#migrations
+anarxiv/db.sqlite3
+anarxiv/anarxiv_app/migrations/
