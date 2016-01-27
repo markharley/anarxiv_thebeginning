@@ -162,31 +162,39 @@ def login(request):
 	except:
 		return JsonResponse({'loginError' : 'true'})
 
-	# Check we know that email
-	try:
-		user = Staff.objects.get(email=email)
-	except:
-		return JsonResponse({'error': 'Email or password incorrect'})
+	# Returns a User if the username and password match
+	user = authenticate(username=attemptedUsername, password=attemptedPassword)	
 
-	# Check the user is activated
-	if user.isActive:
+	if user is not None:
 
-		# Check to see if the user is using a temporary password
-		if user.passwordExpiry != None:
+		if user.isActive:
+			# Check to see if the user is using a temporary password
+			if user.passwordExpiry != None:
 
-			if user.passwordExpiry < datetime.now():
+				if user.passwordExpiry < datetime.now():
 
-				return JsonResponse({'error': "Your temporary password has expired please use the 'forgotten password' " +\
+					return JsonResponse({'error': "Your temporary password has expired please use the 'forgotten password' " +\
 					                      "form to get a new password (and remember to change it within an hour!)"})
 
-		# Returns a User if the username and password match
-		user = authenticate(username=attemptedUsername, password=attemptedPassword)
+			else:		
+				auth_login(request,user)
+				return JsonResponse({'username' : user.username})	
 
-		if user is not None:
-			auth_login(request,user)
-			return JsonResponse({'username' : user.username})
-		else:
-			return JsonResponse({'loginError' : 'true'})
+	else:
+		return JsonResponse({'error': 'Email or password incorrect'})
+		
+
+		# return JsonResponse({'loginError' : 'true'})	
+
+
+
+	# try:
+	# 	user = Staff.objects.get(email=email)
+	# except:
+	# 	return JsonResponse({'error': 'Email or password incorrect'})
+
+	
+
 
 def logout(request):
 	try:

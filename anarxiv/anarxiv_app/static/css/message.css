@@ -49,14 +49,14 @@
     color:rgba(0,0,250,0.5);
 }
 
-.delete{
+.edit{
     float:right;
     padding-right: 10px;
     color:rgba(0,0,250,0.3);
     cursor:pointer;
 }
 
-.delete:hover{
+.edit:hover{
     color:rgba(0,0,250,0.5);
 }
 

@@ -197,6 +197,9 @@ function messageSubmitted() {
 
    			success: function(data) {
 
+   				if(data['message'])
+
+
    				$('#messagewarning').html("");
  
   				$('#messageApend').append(data['messageHTML']);
