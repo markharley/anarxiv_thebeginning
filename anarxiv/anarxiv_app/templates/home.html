@@ -8,87 +8,11 @@
 
 {% block content %}
 
-	<h4> Get the latest papers: </h4>
+<h1> Welcome </h1>
 
-		<div class="dropdown">
-		<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Sub arXiv region
-		<span class="caret"></span></button>
-		<ul class="dropdown-menu">
-			{% for location, name in subAnarxivs.items %}
-				<li> <a href="subanarxiv/{{location}}">{{name}}</a>  </li>
-			{% endfor %}
-		</ul>
-		</div>
+<hr>
 
-	<h4> Search the arXiv and inspires: </h4>	
-
-		<form class="form-inline" role="form" id="homepagesearch">
-			<div class="form-group">
-				<input type="text" id="searchinfo" value="berera">
-			</div>
-			
-			<div class="form-group">	
-			<select class="form-control">
-			    <option value="Inspires">Inspires</option>
-			    <option value="arXiv" selected>arXiv</option>
-			    <option value="InsparXiv">InsparXiv</option>
-			</select>
-			</div>
-
-			<div class="form-group">
-				<button class="btn btn-primary" type="button" onclick="Search(0,1)" id = "searchButton">Search</button>
-			</div>
-			<div id="searchinformation" > Click <span id ="SearchModal" data-toggle="modal" data-target="#myModal" style="cursor:pointer"> here </span> for a summary of the search engine</div>
-		</form>
-
-		<div id = "totalresults" style ="display:none;"> Total number of results: </div>
-		<div id = "resultspage"> </div>
-
-		<div id= "searchresults"> <br> </div>
-
-		<div id="spinner" class="spinner" style="display:none;">
-				<img id="img-spinner" src="{% static 'images/spinner.gif' %}" alt="Loading"/>
-		</div>
-
-		<center><div id = "searchFail" style ="display:none;"> No results found... </div></center>
-
-
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title" id="myModalLabel" style="font-weight:bold;">anarXiv search engine</h4>
-     	 </div>
-     	 <div class="modal-body">
-         		<h6 style="font-weight:bold;"> arXiv search </h6>
-         			This returns results from a request to the arXiv's API. Input parameters currently accepted include name, title, keywords and arXiv numbers. 
-         			This tends to be the quickest of the three methods.
-
-         		<h6 style="font-weight:bold;"> Inspires search </h6>
-         			This returns results from a request to Inspires API. This accepts the standard Inspires search terms i.e. "find a bartrum and t warm inflation" etc
-         			as well as simply name, titles, keywords etc. Due to the nature of Inspires this will only return results from areas related to High energy physics. This is slower than an arXiv search.
-
-				<h6 style="font-weight:bold;"> InsparXiv search </h6>
-					This amalgamates the arXiv and Inspires searches into one, removing duplicates. This allows for a single search which will show results that are missed when either the arXiv or Inspires search is used alone and automatically includes up the new days papers. Not compatible with the Inspires search syntax, simply use name, title, keywords etc. This is the slowest of the three search methods.
-
-
-
-      
-     	 </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-
+	
 
 {% endblock %}
 

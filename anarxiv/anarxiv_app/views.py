@@ -17,7 +17,11 @@ subAnarxivDictionary = {'physics:astro-ph':'Astrophysics', 'physics:cond-mat': '
 
 
 def home(request):
-	 return render(request,'home.html',{'subAnarxivs':subAnarxivDictionary})
+	 return render(request,'home.html')
+
+
+def searchpage(request):
+	 return render(request,'searchpage.html')
 
 ########################################################################################################################################################################################################
 

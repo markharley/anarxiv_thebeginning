@@ -40,6 +40,7 @@ urlpatterns = [
 	url(r'^logout/', views.logout, name='logout'),
 
 
+	url(r'^searchpage/$', views.searchpage, name='searchpage'),
 
 
     url(r'^$', views.home, name='home'),

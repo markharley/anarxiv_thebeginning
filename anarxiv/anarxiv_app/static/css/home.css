@@ -58,8 +58,14 @@
 }
 
 
-
-
+hr {
+    border: none;
+    height: 1px;
+    width: 98%;
+    /* Set the hr color */
+    color: #333; /* old IE */
+    background-color: #333; /* Modern Browsers */
+}
 
 
 

@@ -59,3 +59,5 @@ target/
 #migrations
 anarxiv/db.sqlite3
 anarxiv/anarxiv_app/migrations/
+
+*.DS_Store

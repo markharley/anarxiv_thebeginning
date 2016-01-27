@@ -30,7 +30,7 @@ p {
 }
 
 #navbar{
-    background-color: rgb(102,178,255);
+    background-color: #2B2B2B;
     border: none;
 }
 
@@ -43,6 +43,7 @@ p {
 #websitetitle{
     color:white;
     font-weight: bold;
+    font-size: 25;
 }
 
 
@@ -52,6 +53,11 @@ p {
 
 }
 
+
+#userdropdown{
+    background-color: rgba(1,1,0,0);
+}
+
 #userdropdown:hover{
     background-color: rgb(51,153,255) !important;
 }
@@ -59,6 +65,12 @@ p {
 #userdropdown:focus{
    background-color: rgb(51,153,255) !important;
 }
+
+#userdropdown #usernamefield{
+    font-size: 14;
+    background-color: rgba(0,0,0,0)
+}
+
 
 .menuitem{
     padding-bottom: 3px;
@@ -101,7 +113,7 @@ p {
     margin-left: -225px;
     border: none;
     overflow-y: auto;
-    background-color: rgb(102,178,255);
+    background-color: #2B2B2B;
     bottom: 0;
     overflow-x: hidden;
     padding-bottom: 40px;
