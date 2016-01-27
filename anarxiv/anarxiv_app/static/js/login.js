@@ -28,7 +28,7 @@ function loginAttempt(){
 				user = data["username"];
 				renderLoggedInView();
 				$("#loginModal").modal("hide");
-				window.location.replace("/home/")
+				location.reload();
 			}
 		},
 

@@ -23,6 +23,10 @@ def home(request):
 def searchpage(request):
 	 return render(request,'searchpage.html')
 
+def profilepage(request):
+	return render(request, 'profilepage.html')
+
+
 ########################################################################################################################################################################################################
 
 # Log in and regestration views
@@ -828,70 +832,75 @@ def messageSubmission(request):
 	message_id = request.POST['id']
 	arxivno = request.POST['arxivno']
 
+	# Check if the message is clean or not
+	if not checkClean(message):
+		return JsonResponse({'messageHTML': 'UNCLEAN'})
 
-	# If the paper has an arXiv number
-	if arxivno != '0':
+	else:	
 
-		# We check the newPaper and Paper databases
-		if newPaper.objects.filter(arxiv_no = arxivno).count() != 0:
-			paper = newPaper.objects.get(arxiv_no = arxivno)
-			numposts = len(paper.post_set.all())
-			post = Post(message = message, new_paper = paper, messageID = numposts+1, poster = request.user)
-		
-		elif Paper.objects.filter(arxiv_no = arxivno).count() != 0:
-			paper = Paper.objects.get(arxiv_no = arxivno)
-			numposts = len(paper.post_set.all())
-			post = Post(message = message, paper = paper, messageID = numposts+1, poster = request.user)
+		# If the paper has an arXiv number
+		if arxivno != '0':
 
-		# Else we create the paper object	
-		else:
-			p = arXivSearch(arxivno,"")['paperList'][0]
-			paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'], journal = p['journal_ref'])
-			paper.save()
-			post = Post(message = message, paper = paper, messageID = 1, poster = request.user)
-
-			authors = p['authorlist']
-
-			for author in authors:
-
-				if Author.objects.filter(firstName = author['firstName'], secondName = author['secondName']).count() == 0:
-		
-					temp = Author(firstName = author['firstName'], secondName = author['secondName'])
-					temp.save()
-					# Adds the paper to the Author
-					temp.articles.add(paper)
+			# We check the newPaper and Paper databases
+			if newPaper.objects.filter(arxiv_no = arxivno).count() != 0:
+				paper = newPaper.objects.get(arxiv_no = arxivno)
+				numposts = len(paper.post_set.all())
+				post = Post(message = message, new_paper = paper, messageID = numposts+1, poster = request.user)
 			
-				else:
-					temp = Author.objects.get(firstName = author['firstName'], secondName = author['secondName'])
-					temp.articles.add(paper)	
+			elif Paper.objects.filter(arxiv_no = arxivno).count() != 0:
+				paper = Paper.objects.get(arxiv_no = arxivno)
+				numposts = len(paper.post_set.all())
+				post = Post(message = message, paper = paper, messageID = numposts+1, poster = request.user)
+
+			# Else we create the paper object	
+			else:
+				p = arXivSearch(arxivno,"")['paperList'][0]
+				paper = Paper(title=p['title'], abstract= p['abstract'], arxiv_no= p['arxiv_no'], journal = p['journal_ref'])
+				paper.save()
+				post = Post(message = message, paper = paper, messageID = 1, poster = request.user)
+
+				authors = p['authorlist']
+
+				for author in authors:
+
+					if Author.objects.filter(firstName = author['firstName'], secondName = author['secondName']).count() == 0:
+			
+						temp = Author(firstName = author['firstName'], secondName = author['secondName'])
+						temp.save()
+						# Adds the paper to the Author
+						temp.articles.add(paper)
+				
+					else:
+						temp = Author.objects.get(firstName = author['firstName'], secondName = author['secondName'])
+						temp.articles.add(paper)	
 
 
 
 
 
-	# If the paper does not have an arXiv number	
-	else:
-		# We just have to look for the paper in the Paper database
-		if Paper.objects.filter(Inspires_no = message_id).count() == 1:
-			paper = Paper.objects.get(Inspires_no = message_id)
-			numposts = len(paper.post_set.all())
-			post = Post(message = message, paper = paper, messageID = numposts + 1, poster = request.user)
-
-		# Else we create the paper object	
+		# If the paper does not have an arXiv number	
 		else:
-			temp = paperStore(message_id, "Inspires")
-			post = Post(message = message, paper = temp, messageID = 1, poster = request.user)
-	
+			# We just have to look for the paper in the Paper database
+			if Paper.objects.filter(Inspires_no = message_id).count() == 1:
+				paper = Paper.objects.get(Inspires_no = message_id)
+				numposts = len(paper.post_set.all())
+				post = Post(message = message, paper = paper, messageID = numposts + 1, poster = request.user)
 
-	post.save()
-	
-	
-	context = {'message': post.message, 'time': post.date, 'number': post.messageID, 'user': post.poster.username}
-	template = loader.get_template("message.html")
+			# Else we create the paper object	
+			else:
+				temp = paperStore(message_id, "Inspires")
+				post = Post(message = message, paper = temp, messageID = 1, poster = request.user)
+		
 
-	temp = str(template.render(context).encode('utf8'))
+		post.save()
+		
+		
+		context = {'message': post.message, 'time': post.date, 'number': post.messageID, 'user': post.poster.username}
+		template = loader.get_template("message.html")
 
-	return JsonResponse({'messageHTML': temp, 'message_number':post.messageID})
+		temp = str(template.render(context).encode('utf8'))
+
+		return JsonResponse({'messageHTML': temp, 'message_number':post.messageID})
 
 
 # This returns a JSON of all rendered previous messages for the paper we are looking at
@@ -1020,7 +1029,18 @@ def commentSubmission(request):
 
 
 
+# Maybe stick this in another file
+def checkClean(stringwords):
+	parseArray = (stringwords.lower()).split(" ")
 
+	swearwords = ['fuck','shit','cunt','twat','penis','dick']
+
+	for word in parseArray:
+		if word in swearwords:
+			return False
+
+
+	return True		
 
 
 

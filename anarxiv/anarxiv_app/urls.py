@@ -42,6 +42,8 @@ urlpatterns = [
 
 	url(r'^searchpage/$', views.searchpage, name='searchpage'),
 
+	url(r'^profilepage/$', views.profilepage, name = 'profilepage'),
+
 
     url(r'^$', views.home, name='home'),
 ]

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}anarXiv: {{user.username}}{% endblock %}
+
+{% block content %}
+	
+	<h1> Hello {{ user.username }}! This is your profile page. </h1>
+
+	<hr>
+
+	<div id = "Authordetails"> 
+
+	<h3> Author Details </h3> 
+
+	<ul>
+		<li>Current Institution:</li>
+		<li>Research Fields:</li>
+		<li>Email Address:</li>
+
+	</ul>
+
+
+
+
+	</div>
+
+
+	<h2> Stored papers </h2>
+	<div id = "storedpapers"> 
+	{% for paper in papers %}
+			<p> {{ paper.title }} </p>
+			<p> {{ paper.journal }} </p>
+			<p> {{ paper.arxiv_no }}</p>
+			<p> {{ paper.Citation_count }}</p>
+	{% endfor %}		
+
+	</div>
+
+	<h2> Papers with posts </h2>
+		<div id = "storedpapers"> 
+			{% for paper in paperswithposts %}
+					<p> {{ paper.title }} </p>
+					<p> {{ paper.journal }} </p>
+					<p> {{ paper.arxiv_no }}</p>
+					<p> {{ paper.Citation_count }}</p>
+			{% endfor %}		
+
+	</div>
+
+
+	<h2> Papers </h2>
+		<div id = "AuthorPaperSearch">
+
+			<div id = "AuthorSearchResults">
+
+			</div>
+
+
+		</div>
+
+
+
+
+
+
+
+{% endblock %}
+
+
+{% block script %}
+
+	var selectedSearch = "arXiv";
+
+	var x = "{{ author }}";
+
+	var a = 1;
+
+	var b = "no";
+
+
+$(document).ready(
+
+		$.ajax({
+ 		
+ 			type: "POST",
+   			url: "/home/search/",
+   			data: {'info': x, 'search': selectedSearch, 'index': a},
+   			datatype: "JSON",
+
+   		
+   		success: function(data) {
+  		
+  			$("#spinner").css("display", "none");
+
+  			if(b!="changepage"){
+
+	  			$('#totalresults').css("display","block");
+	  			$('#totalresults').html("Total number of results: ")
+	  			$('#totalresults').append(data['totalResults']);
+
+  		
+  			if(data['totalResults'] > 50){
+  				var num = parseInt(math.ceil(data['totalResults']/50.0));
+  				$('#resultspage').append("Page: ");
+  				for(var i=0; i< num; i++){
+
+  					$('#AuthorPaperSearch').append('<span class = \"pagenumber\" id =' + i + ' style=\"cursor:pointer\">' + String(i+1) + '</span>');
+  				}
+
+  				$('#0').css("color","rgb(0,0,255)");
+				$('#0').css("font-size","20");	
+  			}
+  			}
+  			
+ 
+
+
+   			var length = data['htmlList'].length;
+
+   			for(var i =0; i < length; i++){
+   				$('#AuthorSearchResults').append(data['htmlList'][i]);  }
+    	},
+
+    	error: function(jqXHR, textStatus, errorThrown) {
+    		if(jqXHR.status ==500){
+    			$("#spinner").css("display", "none");
+    			$('#searchFail').css("display","block");
+    		}
+		}
+     })
+);
+
+
+
+
+{% endblock %}
+
+
+
