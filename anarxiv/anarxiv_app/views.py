@@ -120,7 +120,7 @@ def activate(request, requestHash):
 	# Bounce the user to the login page
 	return redirect('/login/')
 
-# request a password reset
+# Request a password reset
 def resetRequest(request):
 
 	# Get the email
