@@ -37,7 +37,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'anarxiv_app'
+    'anarxiv_app',
+    'django_extensions',
 )
 
 MIDDLEWARE_CLASSES = (
