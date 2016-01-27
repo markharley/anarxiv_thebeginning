@@ -11,7 +11,7 @@ urlpatterns = [
 
 	url(r'^result/commentsubmission/$', views.commentSubmission),
 
-	# Inspires search 
+	# Inspires search
 	url(r'^search/$', views.search, name='search'),
 
 	url(r'^author/(?P<authorID>[a-zA-Z0-9.+_%:-]+)/$', views.authorPage),
@@ -25,7 +25,7 @@ urlpatterns = [
 
 	# links to specific arxiv request
 	url(r'^subanarxiv/search/$', views.specificRequest, name='specificRequest'),
-	
+
 	url(r'^subanarxiv/(?P<area>[a-zA-Z0-9._:-]+)/$', views.subanarxiv, name='subanarxiv'),
 
 
@@ -38,7 +38,7 @@ urlpatterns = [
 	url(r'^login/', views.login, name='login'),
 
 	url(r'^logout/', views.logout, name='logout'),
-
+	url(r'^activation/(?P<id>[\w{}.-]{1,40})/', views.activate, name='logout'),
 
 	url(r'^searchpage/$', views.searchpage, name='searchpage'),
 

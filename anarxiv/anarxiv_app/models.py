@@ -50,6 +50,10 @@ class User(AbstractBaseUser):
 	is_admin   = models.BooleanField(default=False)		# Superuser?
 	isAcademic = models.BooleanField(default=False)		# Academic privaleges?
 
+	# Is the user considered 'active'?  When a user registers they will
+	# be inactive until they confirm their email
+	isActive = models.BooleanField(default=False)
+
 	# Record when account is created and modified
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -85,8 +89,6 @@ class Paper(models.Model):
 
 	Citation_count = models.IntegerField(null = True)
 
-
-
 # Temporary table to store the daily papers as they appear on the arxiv, they will get transfered to Paper model and wiped from here.
 class newPaper(models.Model):
 
@@ -107,7 +109,7 @@ class newPaper(models.Model):
 	area = models.ManyToManyField(subArxiv)
 
 class Author(models.Model):
-	
+
 	firstName = models.TextField(null = True)
 	secondName = models.TextField(null = True)
 	BAI = models.CharField(max_length = 10, null = True) # Inspires unique author id
@@ -116,6 +118,9 @@ class Author(models.Model):
 
 	newarticles = models.ManyToManyField(newPaper)   # New daily papers assigned to this author
 
+	# We'll need to link authors to users so people can 'claim' papers
+	user = models.OneToOneField(User, null=True)
+
 class Post(models.Model):
 
 	# Inspires_no = models.CharField(max_length=100, default='0')
@@ -123,7 +128,7 @@ class Post(models.Model):
 	messageID = models.IntegerField(null = True)
 
 	# What does te first arg. here do?  Should this be done with Django's auto_now instead...
-	date = models.DateTimeField('date published', default=datetime.datetime.today)
+	date = models.DateTimeField('date published', auto_now_add=True)
 	# ...like this?
 	# created_at = models.DateTimeField(auto_now_add=True)
 	# updated_at = models.DateTimeField(auto_now=True)
@@ -156,28 +161,23 @@ class Post(models.Model):
 	# What other methods should a post have?
 	def delete(self): pass
 	def reply (self): pass
-	def censor(self): pass
-
-
+	def flag  (self): pass
+	def voteToDelete(self): pass
 
 class Comment(models.Model):
 
 	comment = models.TextField(default="")
-	date = models.DateTimeField('date published', default=datetime.datetime.today)
+	date = models.DateTimeField('date published', auto_now_add=True)
 
 	parentmessage = models.ForeignKey(Post, null = True)
 
 	commenter = models.ForeignKey(User, null  = True)
 
+class ActivationRequest(models.Model):
 
+	# Only need to link to the user who's asked for an account
+	staffMember  = models.OneToOneField(User)
 
-
-
-
-
-
-
-
-
-
+	# Store the hash that the user has to provide in order to register
+	registerHash = models.TextField()
 
