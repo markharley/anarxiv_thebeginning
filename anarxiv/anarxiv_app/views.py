@@ -77,15 +77,17 @@ def registrationRequest(request):
 		return JsonResponse({'error': 'Useful message for the front-end here'})
 
 	# Generate a hash
-	responseHash = uuid.uuid4().hex
+	registerHash = uuid.uuid4().hex
 
 	# Make the account request
-	ActivationRequest(user=newUser, responseHash=responseHash).save()
+	ActivationRequest(user=newUser, registerHash=registerHash).save()
 
 	# Send an activation email to the new users email address
 	body = 'click here to confirm your account\n\nanarxiv.org/activation/' + \
-		str(responseHash) + '\n\nCheers,\nAnarix Admin.'
+		str(registerHash) + '\n\nCheers,\nAnarix Admin.'
+
 	try:
+		print 'sending email'
 		send_mail('Your Anarxiv account has been created!', body, 'admin@anarxiv.co.uk', [newUser.email])
 
 	# This will fail if we're running locally so just print out the email instead...
@@ -96,10 +98,10 @@ def registrationRequest(request):
 	return JsonResponse({'success': 'Welcome to Anarxiv!  Please confirm your account via email'})
 
 # Users get here by following a link in an email which has a unique hash
-def activate(request, requestHash):
+def activate(request, registerHash):
 
 	# Get the activation request from the hash
-	activationRequest = ActivationRequest.objects.filter(requestHash=requestHash)
+	activationRequest = ActivationRequest.objects.filter(registerHash=registerHash)
 
 	# If we returned more than one freak the fuck out
 	if len(activationRequest) > 1:
@@ -118,7 +120,7 @@ def activate(request, requestHash):
 	activationRequest.delete()
 
 	# Bounce the user to the login page
-	return redirect('/login/')
+	return redirect('/home/')
 
 # Request a password reset
 def resetRequest(request):
@@ -163,7 +165,7 @@ def login(request):
 		return JsonResponse({'loginError' : 'true'})
 
 	# Returns a User if the username and password match
-	user = authenticate(username=attemptedUsername, password=attemptedPassword)	
+	user = authenticate(username=attemptedUsername, password=attemptedPassword)
 
 	if user is not None:
 
@@ -175,16 +177,15 @@ def login(request):
 
 					return JsonResponse({'error': "Your temporary password has expired please use the 'forgotten password' " +\
 					                      "form to get a new password (and remember to change it within an hour!)"})
-
-			else:		
+			else:
 				auth_login(request,user)
-				return JsonResponse({'username' : user.username})	
+				return JsonResponse({'username' : user.username})
 
 	else:
 		return JsonResponse({'error': 'Email or password incorrect'})
-		
 
-		# return JsonResponse({'loginError' : 'true'})	
+
+		# return JsonResponse({'loginError' : 'true'})
 
 
 
@@ -192,9 +193,6 @@ def login(request):
 	# 	user = Staff.objects.get(email=email)
 	# except:
 	# 	return JsonResponse({'error': 'Email or password incorrect'})
-
-	
-
 
 def logout(request):
 	try:

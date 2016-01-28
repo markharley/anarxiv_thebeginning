@@ -39,7 +39,7 @@ urlpatterns = [
 
 	url(r'^logout/', views.logout, name='logout'),
 	url(r'^resetRequest/', views.resetRequest, name='resetRequest'),
-	url(r'^activation/(?P<id>[\w{}.-]{1,40})/', views.activate, name='logout'),
+	url(r'^activation/(?P<registerHash>[a-zA-Z0-9+._:-]+)/', views.activate, name='activate'),
 
 	url(r'^searchpage/$', views.searchpage, name='searchpage'),
 

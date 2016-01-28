@@ -176,7 +176,7 @@ class Comment(models.Model):
 class ActivationRequest(models.Model):
 
 	# Only need to link to the user who's asked for an account
-	staffMember  = models.OneToOneField(User)
+	user = models.OneToOneField(User)
 
 	# Store the hash that the user has to provide in order to register
 	registerHash = models.TextField()
