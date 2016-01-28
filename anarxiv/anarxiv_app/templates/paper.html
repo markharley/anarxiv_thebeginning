@@ -56,10 +56,16 @@
 					<div class="alert alert-danger fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Hang on!</strong> Please log in to post a message.</div>
 				{% endif %}		
 
+
+				<div ng-app="">
+					<div id = "preview" ng-bind="input"></div>	
+
+
 				<div id ="messageSubmissionForm" style="display:none;">
-					<textarea rows="4" cols="100" id="messageBox" placeholder="Type a message here: " >Type a message here!</textarea> <br>
+					<textarea rows="4" cols="100" id="messageBox" placeholder="Type a message here: " ng-model="input" onkeyup = "renderLaTeX()">Type a message here!</textarea> <br>
 					<button class="btn btn-primary"type="button" onclick="messageSubmitted()" id = "searchButton">Submit</button>
-					
+				
+				</div>	
 				<div id="messagewarning"></div>
 
 				</div>
@@ -103,10 +109,16 @@
 
 
 
+
 {% endblock %}
 
 
 {% block script %}
+
+function renderLaTeX(){
+		var math = document.getElementById("preview");
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
+};
 
 
 var x = 2;
