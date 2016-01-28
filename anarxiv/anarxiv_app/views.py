@@ -83,11 +83,10 @@ def registrationRequest(request):
 	ActivationRequest(user=newUser, registerHash=registerHash).save()
 
 	# Send an activation email to the new users email address
-	body = 'click here to confirm your account\n\nanarxiv.org/activation/' + \
+	body = 'click here to confirm your account\n\nhttp://127.0.0.1:8000/home/activation/' + \
 		str(registerHash) + '\n\nCheers,\nAnarix Admin.'
 
 	try:
-		print 'sending email'
 		send_mail('Your Anarxiv account has been created!', body, 'admin@anarxiv.co.uk', [newUser.email])
 
 	# This will fail if we're running locally so just print out the email instead...
@@ -167,11 +166,17 @@ def login(request):
 	# Returns a User if the username and password match
 	user = authenticate(username=attemptedUsername, password=attemptedPassword)
 
+	# Debugging...
+	# for user in User.objects.all(): print user.email
+
+	# Did we find a user with those details?
 	if user is not None:
 
+		# Is the user active?
 		if user.isActive:
+
 			# Check to see if the user is using a temporary password
-			if user.passwordExpiry != None:
+			if user.passwordExpiry:
 
 				if user.passwordExpiry < datetime.now():
 
@@ -179,20 +184,15 @@ def login(request):
 					                      "form to get a new password (and remember to change it within an hour!)"})
 			else:
 				auth_login(request,user)
+				print "{'username' : user.username}"
 				return JsonResponse({'username' : user.username})
+		else:
 
+			print "{'error': 'Activate your account first'}"
+			return JsonResponse({'error': 'Activate your account first'})
 	else:
+		print "{'error': 'Email or password incorrect'}"
 		return JsonResponse({'error': 'Email or password incorrect'})
-
-
-		# return JsonResponse({'loginError' : 'true'})
-
-
-
-	# try:
-	# 	user = Staff.objects.get(email=email)
-	# except:
-	# 	return JsonResponse({'error': 'Email or password incorrect'})
 
 def logout(request):
 	try:
