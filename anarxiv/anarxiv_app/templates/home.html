@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
-{% block title %} 
+{% block title %}
 	anarXiv
 {% endblock %}
 
@@ -12,19 +12,19 @@
 
 <hr>
 
-	
+
 
 {% endblock %}
 
 {% block script %}
 
 function Search(a,b) {
-	
+
 	var selectedSearch = $(".form-control option:selected").val();
 
 	$('#searchFail').css("display","none");
 	$('#searchresults').html("");
-	
+
 	$("#spinner").css("display", "block");
 
 	var x = document.getElementById("searchinfo").value;
@@ -45,8 +45,8 @@ function Search(a,b) {
    		success: function(data) {
   			$("#spinner").css("display", "none");
 
- 
-  			
+
+
   			if(b!="changepage"){
 
   			$('#totalresults').css("display","block");
@@ -62,11 +62,11 @@ function Search(a,b) {
   				}
 
   				$('#0').css("color","rgb(0,0,255)");
-				$('#0').css("font-size","20");	
+				$('#0').css("font-size","20");
   			}
   			}
-  			
- 
+
+
 
 
    			var length = data['htmlList'].length;
@@ -88,19 +88,19 @@ function Search(a,b) {
 
 $(document).on('click',".pagenumber", function(){
 
-			
+
 		var index = $(this).html();
 
 		$('.pagenumber').css("color","rgb(0,0,0)");
-		$('.pagenumber').css("font-size","16");	
+		$('.pagenumber').css("font-size","16");
 
 		$(this).css("color","rgb(0,0,255)");
-		$(this).css("font-size","20");	
+		$(this).css("font-size","20");
 
 
 		Search(index-1,"changepage");
 
-		
+
 
 });
 

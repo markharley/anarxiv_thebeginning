@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
-{% block title %} 
+{% block title %}
 	Anarxiv Registration
 {% endblock %}
 
@@ -25,11 +25,11 @@
 			<div id="emailError" class="col-xs-1 alert alert-danger alert-inForm" style="display : none">
 				Invalid email.
 			</div>
-			
+
 			<div id="emailInUse" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
 				Email <span id="proposedEmail"></span> already in use.
 			</div>
-			
+
 			<div id="emailPollFailed" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
 				Failed to contact server.
 			</div>
@@ -48,7 +48,7 @@
 			<div id="usernameInUse" class="col-xs-3 alert alert-danger alert-inForm" style="display : none">
 				Username: <span id="proposedUsername"></span> is already taken.
 			</div>
-			
+
 			<div id="usernamePollFailed" class="col-xs-2 alert alert-danger alert-inForm" style="display : none">
 				Failed to contact server.
 			</div>
@@ -72,7 +72,7 @@
 		</div>
 
 		<div class="row">
-			<div class="col-xs-3">	
+			<div class="col-xs-3">
 				<div class="checkbox">
 					<label><input id="academicQ" type="checkbox" value="">University affiliated</label>
 				</div>
@@ -87,7 +87,7 @@
 
 
 	<script type="text/javascript">
-		// html5 standard email validation regex, see  
+		// html5 standard email validation regex, see
 		// http://www.w3.org/TR/html5/forms.html#valid-e-mail-address
 		// for details
 		var emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -107,7 +107,7 @@
 			emailPoll=$.ajax({
 				type: "POST",
 				url: "/home/register/check/email/",
-				data: {"email" : email}, 
+				data: {"email" : email},
 				datatype: "JSON",
 				success: function(data) {
 					emailPollStatus = data["emailAvailable"];
@@ -148,7 +148,7 @@
 			usernamePoll=$.ajax({
 				type: "POST",
 				url: "/home/register/check/username/",
-				data: {"username" : username}, 
+				data: {"username" : username},
 				datatype: "JSON",
 				success: function(data) {
 					usernamePollStatus = data["usernameAvailable"];
@@ -200,7 +200,7 @@
 						var inputEmail = $('#email').val();
 						var pwd = $("#pwd").val();
 						var academicQ = $("#academicQ").is(':checked')
-	
+
 						$.ajax({
 							type: "POST",
 							url : "/home/register/registrationRequest/",

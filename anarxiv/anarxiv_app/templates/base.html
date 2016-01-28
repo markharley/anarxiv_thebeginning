@@ -10,7 +10,7 @@
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	<script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.6.0/math.min.js"></script>
 	<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-	
+
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<link rel="stylesheet" href="{% static 'css/home.css' %}">
@@ -23,16 +23,16 @@
 	<link rel="stylesheet" href="{% static 'css/author.css' %}">
 	<link rel="stylesheet" href="{% static 'css/registration.css' %}">
 
-	
+
 	<script type="text/javascript" src="{% static 'js/ajax_setup.js' %}"></script>
 	<script type="text/javascript" src="{% static 'js/login.js' %}"></script>
 
 </head>
 <body>
 
-	<!-- This bit of the template finds out if the user is already logged in and 
+	<!-- This bit of the template finds out if the user is already logged in and
 	     sets a global JS variable based on that. It's a kluge, admittedly. -->
-	<script type="text/javascript"> 
+	<script type="text/javascript">
 			{% if not user.is_authenticated %}
 				var user = null;
 			{% else %}
@@ -46,24 +46,24 @@
 
 	    		<!-- Modal content-->
 	    		<div class="modal-content">
-	    
+
 	    				<div class="modal-header" style="padding:35px 50px;">
           					<h3><span class="glyphicon glyphicon-lock"></span> Login</h3>
         				</div>
-	    
+
 	    				<div class="modal-body"style="padding:40px 50px;">
 	    					 <form role="form" id="loginForm">
            						 <div class="form-group">
               						<label for="usrname"><span class="glyphicon glyphicon-user"></span> Username</label>
               						<input type="text" class="form-control" id="loginUser" placeholder="username">
-            					
+
             					</div>
-            					
+
             					<div class="form-group">
              						 <label for="psw"><span class="glyphicon glyphicon-eye-open"></span> Password</label>
-              						<input type="text" class="form-control" id="loginPassword" placeholder="Enter password">
+              						<input type="password" class="form-control" id="loginPassword" placeholder="Enter password">
            						 </div>
-            
+
             					<div class="checkbox">
               						<label><input type="checkbox" value="" checked>Remember me</label>
            						</div>
@@ -72,7 +72,7 @@
          						 </form>
         				</div>
 
-	    	
+
 	    				<div class="modal-footer">
 		    				<p id="loginErrorMessage" class="hidden"> Invalid username or password, please try again. </p>
 		    				<p id="loginServerError" class="hidden"> Failed to contact the server, please try again later. </p>
@@ -97,9 +97,9 @@
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-    
+
       <ul class="nav navbar-nav navbar-right">
- 
+
         <li class="dropdown">
         {% if user.is_authenticated %}
             <a href="#" class="dropdown-toggle" id="userdropdown" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
@@ -110,7 +110,7 @@
 	            <li role="separator" class="divider"></li>
 	            <li class = "menuitem"><a href="#" onclick="logout()"><span class = "glyphicon glyphicon-off"></span>&nbsp; Logout</a></li>
             </ul>
-        	
+
         	{% else %}
         	 <a href="#" class="dropdown-toggle" id="userdropdown" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
           	 <span class= "glyphicon glyphicon-user" style="color:white; font-size:12;"></span><span id="userNameField">&nbsp; Login</span>  <span class="caret" style="color:white"></span></a>
@@ -128,43 +128,43 @@
 
 
    <div class="collapse navbar-collapse navbar-ex1-collapse">
-	
-              	
+
+
               	  <ul class="nav navbar-nav side-nav">
 
               	  	<li>
               	  		<div id = "sidebar_welcome">
 		  					{% if user.is_authenticated %}
-		                		Welcome {{user.username}}! 
+		                		Welcome {{user.username}}!
 		                	{% else %}
 		                		Please login or sign up to get involved!
-		              	  	{% endif %}	
+		              	  	{% endif %}
 
-		              	 </div> 
+		              	 </div>
               		 </li>
 
                     <li>
                         <a href="/home/" id = "item"><i class="fa fa-home fa-fw"></i>&nbsp; Home</a>
                     </li>
-              
+
                     <li>
                         <a data-toggle="collapse" data-target="#demo" id = "item"><i class="fa fa-newspaper-o"></i>&nbsp; New papers!  </a>
-                     
+
                         <ul id="demo" class="collapse">
 
 
                         	{% for location, name in subAnarxivs.items %}
 								<li> <a href="/home/subanarxiv/{{location}}" id = "subitem">{{name}}</a>  </li>
 							{% endfor %}
-                          
+
                         </ul>
                     </li>
 
                      <li>
 		  					{% if user.is_authenticated %}
 		                		<a href="/home/profilepage/" id = "item"><i class="fa fa-user"></i>&nbsp; Profile page</a>
-		          
-		              	  	{% endif %}	
+
+		              	  	{% endif %}
               		 </li>
 
 
@@ -175,7 +175,7 @@
                     <li>
                         <a href="blank-page.html" id = "item"><i class="fa fa-users"></i>&nbsp; Visit the forums</a>
                     </li>
-                  
+
                 </ul>
             </div>
 
@@ -201,7 +201,7 @@
 
 
 
- 
+
 
 
 </body>
