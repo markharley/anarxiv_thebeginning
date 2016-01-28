@@ -1082,47 +1082,52 @@ def commentSubmission(request):
 	Inspiresno = request.POST['id']
 	arxiv_no = request.POST['arxivno']
 
-	if arxiv_no != '0':
+	# Check if the message is clean or not
+	if not checkClean(comment):
+		return JsonResponse({'messageHTML': 'UNCLEAN'})
 
-		if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 1:
-			article = newPaper.objects.get(arxiv_no = arxiv_no)
-
-		elif Paper.objects.filter(arxiv_no = arxiv_no).count() == 1:
-			article = Paper.objects.get(arxiv_no = arxiv_no)
-
-		else:
-			article = "NONE"
-
-	# If the paper has an Inspires number but no arXiv number so we only check the Paper database
 	else:
+		if arxiv_no != '0':
 
-		if Paper.objects.filter(Inspires_no = str(Inspiresno)).count() ==1:
-			article = Paper.objects.get(Inspires_no = str(Inspiresno))
+			if newPaper.objects.filter(arxiv_no = arxiv_no).count() == 1:
+				article = newPaper.objects.get(arxiv_no = arxiv_no)
+
+			elif Paper.objects.filter(arxiv_no = arxiv_no).count() == 1:
+				article = Paper.objects.get(arxiv_no = arxiv_no)
+
+			else:
+				article = "NONE"
+
+		# If the paper has an Inspires number but no arXiv number so we only check the Paper database
 		else:
-			article = "NONE"
+
+			if Paper.objects.filter(Inspires_no = str(Inspiresno)).count() ==1:
+				article = Paper.objects.get(Inspires_no = str(Inspiresno))
+			else:
+				article = "NONE"
 
 
 
-	message = Post.objects.get(messageID = messageid, paper =article)
+		message = Post.objects.get(messageID = messageid, paper =article)
 
-	newcomment = Comment(comment = comment, parentmessage = message, commenter = request.user)
-	newcomment.save()
+		newcomment = Comment(comment = comment, parentmessage = message, commenter = request.user)
+		newcomment.save()
 
-	numcomments = len(message.comment_set.all())
+		numcomments = len(message.comment_set.all())
 
 
-	context = {'message': newcomment.comment, 'time': newcomment.date, 'number': messageid, 'user':newcomment.commenter.username}
-	template = loader.get_template("comment.html")
+		context = {'message': newcomment.comment, 'time': newcomment.date, 'number': messageid, 'user':newcomment.commenter.username}
+		template = loader.get_template("comment.html")
 
-	temp = str(template.render(context).encode('utf8'))
+		temp = str(template.render(context).encode('utf8'))
 
-	return JsonResponse({'messageHTML': temp, 'num_comments': numcomments})
+		return JsonResponse({'messageHTML': temp, 'num_comments': numcomments})
 
 # Maybe stick this in another file
 def checkClean(stringwords):
 	parseArray = (stringwords.lower()).split(" ")
 
-	swearwords = ['fuck','shit','cunt','twat','penis','dick']
+	swearwords = ['fuck','shit','cunt','twat','penis','dick', 'pussy', 'arse', 'bitch']
 
 	for word in parseArray:
 		if word in swearwords:

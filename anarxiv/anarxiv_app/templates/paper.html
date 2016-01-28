@@ -188,6 +188,7 @@ function messageSubmitted() {
 
 	else{
 
+
 		$.ajax({
  			type: "POST",
 			url: "../messagesubmission/",
@@ -197,8 +198,13 @@ function messageSubmitted() {
 
    			success: function(data) {
 
-   				if(data['message'])
+   				if(data['messageHTML'] == 'UNCLEAN'){
 
+   					$('#messagewarning').html("");
+   					$('#messagewarning').append("<div class=\"alert alert-danger fade in\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a><strong>Hang on!</strong> Please keep the messages clean!</div>");
+
+   				}
+   				else{
 
    				$('#messagewarning').html("");
  
@@ -207,6 +213,7 @@ function messageSubmitted() {
 
 				$("#" + data['message_number'] + ".comment_number").append("0");
 
+				}
         	}
      	
      		})
@@ -257,7 +264,16 @@ function commentSubmitted(messageid){
 
 
 		   	success: function(data) {
-		 
+
+		   			if(data['messageHTML'] == 'UNCLEAN'){
+
+   					$("#" + messageid + ".commentwarning").html("");
+   					$("#" + messageid + ".commentwarning").append("<div class=\"alert alert-danger fade in\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a><strong>Hang on!</strong> Please keep the messages clean!</div>");
+
+   				}
+   				else{
+		 	
+
 					$("#" + messageid + ".insertcomments").append(data['messageHTML']);
 					$("#" + messageid + ".commentBox").html("");
 
@@ -265,7 +281,7 @@ function commentSubmitted(messageid){
 					$("#" + messageid + ".comment_number").append(data['num_comments']);
 					
 					
-
+					}	
 		        }
 		     	
 		    })
